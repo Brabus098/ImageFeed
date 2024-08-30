@@ -2,9 +2,11 @@
 
 import UIKit
 
-class ImagesListViewController: UIViewController {
-
+final class ImagesListViewController: UIViewController {
+    
+    // MARK: Property
     @IBOutlet private var tableView: UITableView!
+    private let showSingleImageSegueIdentifier = "ShowSingleImage"
     private let photosName: [String] = Array(0..<20).map { "\($0)"}
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -12,32 +14,50 @@ class ImagesListViewController: UIViewController {
         formatter.timeStyle = .none
         formatter.dateFormat = "d MMMM yyyy"
         formatter.locale = Locale(identifier: "ru_RU")
-        return formatter
-    }()
-    var todayDate = Date()
+        return formatter}()
+    private var todayDate = Date()
     
+    // MARK: LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0) // Добавляем отступы сверху и снизу для контента таблицы
     }
     
-    // Метод настройки строки
+    // Метод настройки кастомной строки
     func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
         cell.likeButton.setTitle("", for: .normal)
         indexPath.row % 2 == 0 ? cell.likeButton.setImage(.unactiveLike, for: .normal) : cell.likeButton.setImage(.activeLike, for: .normal)
         
         // Проверяем есть ли значение по адресу
-        guard let newImage = UIImage(named: "\(indexPath.row)") else {return}
+        guard let newImage = UIImage(named: "\(indexPath.row)") else { return }
         cell.cellImageView.image = newImage // задаем картинку
         cell.dateLabel.text = dateFormatter.string(from: todayDate) // задаем дату
-
+        cell.dateLabel.font = UIFont(name: "SFPro-Regular", size: 13)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?){
+        if segue.identifier == showSingleImageSegueIdentifier{
+            guard
+                let viewController = segue.destination as? SingleImageViewController, // Проверяем что наш сигвей идет к нужному контроллеру
+                let indexPath = sender as? IndexPath // проверяем что нам пришел именно адрес конкретной строки
+            else {
+                assertionFailure("Invalid segue destination")
+                return
+            }
+            let image = UIImage(named: photosName[indexPath.row])
+            viewController.image = image // передаем картинку внутрь singleView в свойство image
+        } else {
+            super.prepare(for: segue, sender: sender)
+        }
     }
 }
 
+// MARK: UITableViewDelegate
 extension ImagesListViewController: UITableViewDelegate {
+    
     // Метод вызывается когда пользователь нажимает на ячейку
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
+        performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
     }
     
     // Динамический расчет высоты строки
@@ -55,11 +75,12 @@ extension ImagesListViewController: UITableViewDelegate {
     }
 }
 
-extension ImagesListViewController: UITableViewDataSource{
-
+// MARK: UITableViewDataSource
+extension ImagesListViewController: UITableViewDataSource {
+    
     // Метод определяет количество строк в секции таблицы
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return photosName.count
+        photosName.count
     }
     
     // Метод создает и настраивает ячейку для конкретной строки
@@ -75,5 +96,5 @@ extension ImagesListViewController: UITableViewDataSource{
         
         return imageListCell // 4 Возвращаем получившуюся строку
     }
-        
 }
+
