@@ -3,93 +3,106 @@
 
 import UIKit
 
-class ProfileViewController: UIViewController {
+final class ProfileViewController: UIViewController {
     
-    // MARK: Property
-    private var profileUiImage = UIImageView()
-    private var profileNameLabel = UILabel()
-    private var emailLabel = UILabel()
+    // MARK: Properties
+    private var profileImageView = UIImageView()
+    private var nameLabel = UILabel()
+    private var usernameLabel = UILabel()
     private var statusLabel = UILabel()
-    private var exitButton = UIButton()
+    private var logoutButton = UIButton()
+    
+    private enum ConstantsProfile {
+        static let avatarSize: CGFloat = 70
+        static let sideInset: CGFloat = 16
+        static let topInset: CGFloat = 32
+        static let nameFontSize: CGFloat = 23
+        static let middleInsert: CGFloat = 8
+        static let secondaryFontSize: CGFloat = 13
+        static let exitWidt: CGFloat = 24
+        static let trailingInsert: CGFloat = -26
+    }
     
     // MARK: LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        setUp(profileImage: profileUiImage, profileName: profileNameLabel, email: emailLabel, status: statusLabel, exitButton: exitButton)
+        setUpImage(profileImage:profileImageView)
+        setUpProfileName(profileName: nameLabel, profileImage: profileImageView)
+        setUpEmail(email: usernameLabel, profileName: nameLabel, profileImage: profileImageView)
+        setUpStatus(email: usernameLabel, status: statusLabel, profileImage: profileImageView)
+        setUpExitButton(exitButton: logoutButton, profileImage: profileImageView)
     }
     
-    // MARK: Action button
-    func setUp(profileImage: UIImageView, profileName: UILabel, email: UILabel, status: UILabel, exitButton: UIButton){
+    // MARK: Methods
+    
+    private func addSubview(_ subview: UIView) {
+        view.addSubview(subview)
+        subview.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    private func setUpImage(profileImage: UIImageView){
         self.view.backgroundColor = .ypBlackIOS
         
-        // Image
         let image = UIImage(named: "ProfilePhoto")
         profileImage.image = image
         
-        self.view.addSubview(profileImage)
-        profileImage.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(profileImage)
         
         NSLayoutConstraint.activate([
-            profileImage.heightAnchor.constraint(equalToConstant: 70),
+            profileImage.heightAnchor.constraint(equalToConstant: ConstantsProfile.avatarSize),
             profileImage.widthAnchor.constraint(equalTo: profileImage.heightAnchor),
-            profileImage.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: 32),
-            profileImage.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 16)
-        ])
-        
-        // Name
+            profileImage.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: ConstantsProfile.topInset),
+            profileImage.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: ConstantsProfile.sideInset)
+        ])}
+    
+    private func setUpProfileName(profileName: UILabel, profileImage: UIImageView){
         profileName.text = "Екатерина Новикова"
         profileName.textColor = .ypWhiteIOS
-        profileName.font = UIFont(name: "SFPro-Bold", size: 23)
+        profileName.font = UIFont(name: "SFPro-Bold", size: ConstantsProfile.nameFontSize)
         
-        self.view.addSubview(profileName)
-        profileName.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(profileName)
         
         NSLayoutConstraint.activate([
             profileName.leadingAnchor.constraint(equalTo: profileImage.leadingAnchor),
-            profileName.topAnchor.constraint(equalTo: profileImage.bottomAnchor, constant: 8)
+            profileName.topAnchor.constraint(equalTo: profileImage.bottomAnchor, constant: ConstantsProfile.middleInsert)
         ])
-        
-        //email
+    }
+    private func setUpEmail(email: UILabel, profileName: UILabel, profileImage: UIImageView ){
         email.text = "@ekaterina_nov"
         email.textColor = .ypGrayIOS
-        email.font = UIFont(name: "SFPro-Regular", size: 13)
+        email.font = UIFont(name: "SFPro-Regular", size: ConstantsProfile.secondaryFontSize)
         
-        self.view.addSubview(email)
-        email.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(email)
         
         NSLayoutConstraint.activate([
             email.leadingAnchor.constraint(equalTo: profileImage.leadingAnchor),
-            email.topAnchor.constraint(equalTo: profileName.bottomAnchor, constant: 8)
+            email.topAnchor.constraint(equalTo: profileName.bottomAnchor, constant: ConstantsProfile.middleInsert)
         ])
-        
-        //status
+    }
+    private func setUpStatus(email: UILabel, status: UILabel, profileImage: UIImageView){
         status.text = "Hello, world!"
         status.textColor = .ypWhiteIOS
-        status.font = UIFont(name: "SFPro-Regular", size: 13)
+        status.font = UIFont(name: "SFPro-Regular", size: ConstantsProfile.secondaryFontSize)
         
-        self.view.addSubview(status)
-        status.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(status)
         
         NSLayoutConstraint.activate([
             status.leadingAnchor.constraint(equalTo: profileImage.leadingAnchor),
-            status.topAnchor.constraint(equalTo: email.bottomAnchor, constant: 8)
-        ])
-        
-        //ExitButton
-        exitButton.tintColor = .ypRedIOS
-        exitButton.setImage(UIImage(named: "Exit"), for: .normal)
-        
-        self.view.addSubview(exitButton)
-        exitButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            exitButton.centerYAnchor.constraint(equalTo: profileImage.centerYAnchor),
-            exitButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -26),
-            exitButton.widthAnchor.constraint(equalToConstant: 24),
-            exitButton.heightAnchor.constraint(equalTo: exitButton.widthAnchor)
-            
+            status.topAnchor.constraint(equalTo: email.bottomAnchor, constant: ConstantsProfile.middleInsert)
         ])
     }
     
+    private func setUpExitButton(exitButton: UIButton, profileImage: UIImageView){
+        exitButton.tintColor = .ypRedIOS
+        exitButton.setImage(UIImage(named: "Exit"), for: .normal)
+        
+        addSubview(exitButton)
+        
+        NSLayoutConstraint.activate([
+            exitButton.centerYAnchor.constraint(equalTo: profileImage.centerYAnchor),
+            exitButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: ConstantsProfile.trailingInsert),
+            exitButton.widthAnchor.constraint(equalToConstant: ConstantsProfile.exitWidt),
+            exitButton.heightAnchor.constraint(equalTo: exitButton.widthAnchor)
+        ])
+    }
 }
