@@ -8,6 +8,13 @@ protocol AuthViewControllerDelegate: AnyObject {
 
 final class AuthViewController: UIViewController, WebViewViewControllerDelegate {
     
+    private enum ButtonConstants {
+        static let bottomInsert: CGFloat = -90
+        static let rightInset: CGFloat = -16
+        static let leftInset: CGFloat = 16
+        static let buttonHeight: CGFloat = 48
+    }
+
     // MARK: Properties
     private let logoImageView = UIImageView()
     @IBOutlet private weak var enterButton: UIButton!
@@ -78,14 +85,6 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
             enterButton.centerXAnchor.constraint(equalTo: logoImageView.centerXAnchor)
         ])
     }
-    
-    private enum ButtonConstants {
-        static let bottomInsert: CGFloat = -90
-        static let rightInset: CGFloat = -16
-        static let leftInset: CGFloat = 16
-        static let buttonHeight: CGFloat = 48
-     
-    }
 
     // MARK: webViewViewControllerDelegate
     // Метод создает POST запрос и отправляет в сеть
@@ -93,7 +92,9 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
         let optionalUrl = oauth2Service.makeOAuthTokenRequest(code: code)
         if let urlRequest = optionalUrl {
             oauth2Service.fetchOAuthToken(code: urlRequest) { request in
-                self.delegate?.didAuthenticate(self)
+                DispatchQueue.main.async {
+                    self.delegate?.didAuthenticate(self)
+                }
             }
         }
     }

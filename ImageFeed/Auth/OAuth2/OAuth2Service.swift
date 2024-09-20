@@ -39,28 +39,36 @@ final class OAuth2Service {
                     let decoder = JSONDecoder()
                     let response = try decoder.decode(OAuthTokenResponseBody.self, from: data) // пробуем привест полученные данные в access_token с помощью модели
                     guard !response.token.isEmpty else {
-                        
                         print("Токен пустой, \(String(describing: DecodingError.keyNotFound))")
-                        completion(.failure(NetworkError.invalidToken))
+                        DispatchQueue.main.async {
+                            completion(.failure(NetworkError.invalidToken))
+                        }
                         return
                     }
                     if let errors = response.error, !errors.isEmpty {
                         print("Пришла ошибка внутри Json, \(NetworkError.apiError(errors))")
-                        completion(.failure(NetworkError.apiError(errors)))
+                        DispatchQueue.main.async {
+                            completion(.failure(NetworkError.apiError(errors)))
+                        }
                         return
                     }
                     self.saveToken.token = response.token // сохранем access_token в случае успешно пройденных проверок
-                    completion(.success(response.token))
+                    DispatchQueue.main.async {
+                        completion(.success(response.token))
+                    }
                 } catch {
                     print("Ошибка при кодировке объекта Data, для url - \(code)")
-                    completion(.failure(NetworkError.decodingError))
+                    DispatchQueue.main.async {
+                        completion(.failure(NetworkError.decodingError))
+                    }
                 }
             case .failure(let error):
                 print("Ошибка - \(NetworkError.urlRequestError(error)), при попытке отправить создать задачу для отправления в сеть ")
-                completion(.failure(NetworkError.urlRequestError(error)))
+                DispatchQueue.main.async {
+                    completion(.failure(NetworkError.urlRequestError(error)))
+                }
             }
         }
         URLSessionTask.resume()
     }
 }
-
