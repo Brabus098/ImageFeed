@@ -27,7 +27,7 @@ final class SplashViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        //storage.tokenDelete вычисляемое свойство обнуляющее токен в 
+        //storage.tokenDelete вычисляемое свойство обнуляющее токен 
     }
     
     override func viewDidLayoutSubviews() {
