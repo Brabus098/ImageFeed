@@ -1,0 +1,101 @@
+# Создано https://www.toptal.com/developers/gitignore/api/swift,xcode
+# Редактировать на https://www.toptal.com/developers/gitignore?templates=swift,xcode
+
+### Быстрый ###
+# Xкод
+#
+# участники gitignore: не забудьте обновить Global/Xcode.gitignore, Objective-C.gitignore и Swift.gitignore
+
+## Настройки пользователя
+xcuserdata/
+
+## совместимость с Xcode 8 и более ранними версиями (игнорируем необязательное для запуска Xcode 9)
+*.xcscmblueprint
+*.xccheckout
+
+## совместимость с Xcode 3 и более ранними версиями (игнорируем необязательные для запуска Xcode 4)
+строить/
+ПроизводныеДанные/
+*.отодвинуто в сторону
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+## Специфика Obj-C/Swift
+*.hmap
+
+## Упаковка приложения
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Игровые площадки
+временная шкала.xctimeline
+детская площадка.xcworkspace
+
+# Менеджер пакетов Swift
+# Добавьте эту строку, если вы хотите избежать проверки исходного кода из зависимостей Swift Package Manager.
+# Пакеты/
+# Пакет.pins
+# Пакет.разрешен
+# *.xcodeproj
+# Xcode автоматически генерирует этот каталог с файлом .xcworkspacedata и xcuserdata
+# поэтому он не нужен, если вы не добавили файл конфигурации пакета в свой проект
+# .swiftpm
+
+.строить/
+
+# Какао-бобы
+# Мы не рекомендуем добавлять каталог Pods в ваш .gitignore. Однако
+# судите сами, плюсы и минусы указаны здесь:
+# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
+# Стручки/
+# Добавьте эту строку, если вы хотите избежать проверки исходного кода из рабочей области Xcode
+# *.xcworkspace
+
+# Карфаген
+# Добавьте эту строку, если вы хотите избежать проверки исходного кода из зависимостей Carthage.
+# Карфаген/Кассы
+
+Карфаген/Строительство/
+
+# Accio управление зависимостью
+Зависимости/
+.аччио/
+
+# скоростная полоса
+# Не рекомендуется хранить скриншоты в репозитории git.
+# Вместо этого используйте fastlane для повторной генерации снимков экрана всякий раз, когда они необходимы.
+# Для получения дополнительной информации о рекомендуемой настройке посетите:
+# https://docs.fastlane.tools/best-practices/source-control/#source-control
+
+fastlane/отчет.xml
+fastlane/Preview.html
+fastlane/скриншоты/**/*.png
+fastlane/тестовый_выход
+
+# Внедрение кода
+# После нового кода Injection tools создается папка /iOSInjectionProject
+# https://github.com/johnno1962/injectionforxcode
+
+iOSInjectionProject/
+
+### X-код ###
+
+## Xcode 8 и более ранние версии
+
+### Xcode патч ###
+*.xcodeproj/*
+!*.xcodeproj/проект.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+/*.gcno
+**/xcshareddata/WorkspaceSettings.xcsettings
+
+# Конец https://www.toptal.com/developers/gitignore/api/swift,xcode
