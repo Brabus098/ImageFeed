@@ -4,15 +4,15 @@ import UIKit
 
 final class SingleImageViewController: UIViewController {
     
-    // MARK: Property
+    // MARK: Properties
     @IBOutlet weak private var scrollView: UIScrollView!
-    @IBOutlet weak private var imageView: UIImageView!
+    @IBOutlet weak private var displayedImageView: UIImageView!
     
     // Свойство вызываемое из другого контролерра для добавление актуальной картинки
     var image: UIImage? {
         didSet{ guard isViewLoaded, let image else { return }
-            imageView.image = image
-            imageView.frame.size = image.size
+            displayedImageView.image = image
+            displayedImageView.frame.size = image.size
             rescaleAndCenterImageInScrollView(image: image)
         }
     }
@@ -28,8 +28,9 @@ final class SingleImageViewController: UIViewController {
         dismiss(animated: true, completion: nil)
     }
     
-    @IBAction func didTapShareButton() {
+    @IBAction private func didTapShareButton() {
         guard let image else { return }
+        
         let share = UIActivityViewController(
             activityItems: [image],
             applicationActivities: nil
@@ -60,15 +61,15 @@ final class SingleImageViewController: UIViewController {
     }
     
     private func setUpScrollZoom(){
-        scrollView.minimumZoomScale = 0.1
-        scrollView.maximumZoomScale = 1.25
+        scrollView.minimumZoomScale = .minZoomScale
+        scrollView.maximumZoomScale = .maxZoomScale
         scrollView.bounces = true
     }
     
     private func setUpImage(){
         if let newImage = image {
-            imageView.image = newImage
-            imageView.frame.size = newImage.size
+            displayedImageView.image = newImage
+            displayedImageView.frame.size = newImage.size
             rescaleAndCenterImageInScrollView(image: newImage)
         }
     }
@@ -78,7 +79,7 @@ final class SingleImageViewController: UIViewController {
 extension SingleImageViewController: UIScrollViewDelegate {
     // Метод позволяет пользователю вручную увеличивать или уменьшать изображение
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return imageView
+        return displayedImageView
     }
     // Метод возвращает картинку к центру при уменьшении
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with: UIView?, atScale: CGFloat){
@@ -90,4 +91,9 @@ extension SingleImageViewController: UIScrollViewDelegate {
         let insetY = max(0, (visibleRectSize.height - newContentSize.height) / 2)
         scrollView.contentInset = UIEdgeInsets(top: insetY, left: insetX, bottom: insetY, right: insetX)
     }
+}
+
+private extension CGFloat {
+    static let minZoomScale: CGFloat = 0.1
+    static let maxZoomScale: CGFloat = 1.25
 }
