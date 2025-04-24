@@ -5,6 +5,8 @@ import UIKit
 final class ImagesListViewController: UIViewController {
     
     // MARK: Properties
+    
+    @IBOutlet weak var tabBar: UITabBarItem!
     @IBOutlet private var tableView: UITableView!
     private let photosName: [String] = Array(0..<20).map { "\($0)"}
     private lazy var dateFormatter: DateFormatter = {

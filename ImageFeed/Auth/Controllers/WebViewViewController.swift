@@ -54,7 +54,10 @@ final class WebViewViewController: UIViewController {
         webView.load(request)
     }
     // Метод обновления прогресса
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    override func observeValue(forKeyPath keyPath: String?,
+                               of object: Any?,
+                               change: [NSKeyValueChangeKey : Any]?,
+                               context: UnsafeMutableRawPointer?) {
         if keyPath == #keyPath(WKWebView.estimatedProgress) { // проверяем наше ли путь
             updateProgress()
         } else {
