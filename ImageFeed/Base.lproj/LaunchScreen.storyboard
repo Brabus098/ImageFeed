@@ -18,14 +18,14 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="splash_screen_logo" translatesAutoresizingMaskIntoConstraints="NO" id="kGI-XA-p5g">
-                                <rect key="frame" x="170.5" y="403.5" width="73" height="75"/>
+                                <rect key="frame" x="170.5" y="417.5" width="73" height="75"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" name="YP Black (iOS)"/>
                         <constraints>
                             <constraint firstItem="kGI-XA-p5g" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="qtl-8u-sNf"/>
-                            <constraint firstItem="kGI-XA-p5g" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" constant="-13.833333333333258" id="xQO-qx-po1"/>
+                            <constraint firstItem="kGI-XA-p5g" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="xQO-qx-po1"/>
                         </constraints>
                     </view>
                 </viewController>

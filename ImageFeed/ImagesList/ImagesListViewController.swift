@@ -4,9 +4,10 @@ import UIKit
 
 final class ImagesListViewController: UIViewController {
     
-    // MARK: Property
+    // MARK: Properties
+    
+    @IBOutlet weak var tabBar: UITabBarItem!
     @IBOutlet private var tableView: UITableView!
-    private let showSingleImageSegueIdentifier = "ShowSingleImage"
     private let photosName: [String] = Array(0..<20).map { "\($0)"}
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -36,7 +37,7 @@ final class ImagesListViewController: UIViewController {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?){
-        if segue.identifier == showSingleImageSegueIdentifier{
+        if segue.identifier == Constants.showSingleImage{
             guard
                 let viewController = segue.destination as? SingleImageViewController, // Проверяем что наш сигвей идет к нужному контроллеру
                 let indexPath = sender as? IndexPath // проверяем что нам пришел именно адрес конкретной строки
@@ -57,7 +58,7 @@ extension ImagesListViewController: UITableViewDelegate {
     
     // Метод вызывается когда пользователь нажимает на ячейку
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
+        performSegue(withIdentifier: Constants.showSingleImage, sender: indexPath)
     }
     
     // Динамический расчет высоты строки
