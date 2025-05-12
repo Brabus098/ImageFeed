@@ -1,11 +1,10 @@
 //  AuthViewController.swift
-
 import UIKit
+import ProgressHUD
 
 protocol AuthViewControllerDelegate: AnyObject {
     func didAuthenticate(_ vc: AuthViewController)
 }
-
 final class AuthViewController: UIViewController, WebViewViewControllerDelegate {
     
     private enum ButtonConstants {
@@ -14,14 +13,14 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
         static let leftInset: CGFloat = 16
         static let buttonHeight: CGFloat = 48
     }
-
+    
     // MARK: Properties
     private let logoImageView = UIImageView()
     @IBOutlet private weak var enterButton: UIButton!
     private let identifierForView = "ShowWebView"
     private let oauth2Service = OAuth2Service.shared
     weak var delegate: AuthViewControllerDelegate?
-
+    
     // MARK: LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,12 +41,11 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
                 assertionFailure("Failed to prepare for \(identifierForView)")
                 return
             }
-            webViewViewController.delegate = self 
+            webViewViewController.delegate = self
         } else {
             super.prepare(for: segue, sender: sender)
         }
     }
-    
     private func setUpViews(){
         // View
         view.backgroundColor = .ypBlackIOS
@@ -60,6 +58,7 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         
         // Button
+        guard let enterButton = enterButton else { return }
         self.enterButton.setTitle("Войти", for: .normal)
         self.enterButton.setTitleColor(.ypBlackIOS, for: .normal)
         self.enterButton.layer.masksToBounds = true
@@ -85,15 +84,25 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
             enterButton.centerXAnchor.constraint(equalTo: logoImageView.centerXAnchor)
         ])
     }
-
     // MARK: webViewViewControllerDelegate
     // Метод создает POST запрос и отправляет в сеть
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        let optionalUrl = oauth2Service.makeOAuthTokenRequest(code: code)
-        if let urlRequest = optionalUrl {
-            oauth2Service.fetchOAuthToken(code: urlRequest) { request in
+        DispatchQueue.main.async {
+            UIBlockingProgressHUD.show()
+            self.navigationController?.popViewController(animated: true)
+            self.oauth2Service.fetchOAuthToken(code: code) { result in
                 DispatchQueue.main.async {
-                    self.delegate?.didAuthenticate(self)
+                    switch result {
+                    case .success:
+                        UIBlockingProgressHUD.dismiss()
+                        self.delegate?.didAuthenticate(self)
+                    case .failure:
+                        UIBlockingProgressHUD.dismiss()
+                        AlertPresenter.shared.showAlert(controller: self,
+                                                        title: "Что-то пошло не так(",
+                                                        message: "Не удалось войти в систему",
+                                                        preferredStyle: .alert)
+                    }
                 }
             }
         }
