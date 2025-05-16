@@ -48,6 +48,12 @@ final class ProfileViewController: UIViewController {
         updateAvatar()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
+        profileImageView.clipsToBounds = true
+    }
+    
     // MARK: Methods
     // Метод обновляет данные профиля
     private func updateAvatar(){

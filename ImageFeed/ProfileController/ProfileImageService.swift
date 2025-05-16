@@ -2,7 +2,7 @@
 
 import Foundation
 
-final class ProfileImageService{
+final class ProfileImageService {
     
     private(set) var avatarURL: String?
     private var storage = KeychainStorage()
@@ -11,7 +11,7 @@ final class ProfileImageService{
     static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
     
     static let shared = ProfileImageService()
-    init() {}
+    private init() {}
     
     // Get для получения фото
     private func getPhoto(token: String, userName:String) -> URLRequest?{

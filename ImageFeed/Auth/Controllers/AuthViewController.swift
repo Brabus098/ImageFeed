@@ -58,13 +58,12 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         
         // Button
-        guard let enterButton = enterButton else { return }
+    
         self.enterButton.setTitle("Войти", for: .normal)
         self.enterButton.setTitleColor(.ypBlackIOS, for: .normal)
         self.enterButton.layer.masksToBounds = true
         self.enterButton.layer.cornerRadius = 16
         
-        view.addSubview(enterButton)
         enterButton.translatesAutoresizingMaskIntoConstraints = false
         
         // NavigationController
