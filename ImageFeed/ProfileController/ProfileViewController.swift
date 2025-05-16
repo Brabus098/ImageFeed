@@ -1,16 +1,18 @@
 //  ProfileViewController.swift
-//  ImageFeed
 
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
     // MARK: Properties
     private var profileImageView = UIImageView()
+    private var profileImageServiceObserver: NSObjectProtocol?
     private var nameLabel = UILabel()
     private var usernameLabel = UILabel()
     private var statusLabel = UILabel()
     private var logoutButton = UIButton()
+    private var profileService = ProfileService.shared
     
     private enum ConstantsProfile {
         static let avatarSize: CGFloat = 70
@@ -31,9 +33,47 @@ final class ProfileViewController: UIViewController {
         setUpEmail(email: usernameLabel, profileName: nameLabel, profileImage: profileImageView)
         setUpStatus(email: usernameLabel, status: statusLabel, profileImage: profileImageView)
         setUpExitButton(exitButton: logoutButton, profileImage: profileImageView)
+        
+        if let profile = profileService.profile {
+            updateProfileDetails(profile: profile)
+        }
+        
+        profileImageServiceObserver = NotificationCenter.default.addObserver(forName: ProfileImageService.didChangeNotification,
+                                                                             object: nil,
+                                                                             queue: .main,
+                                                                             using: { [weak self] _ in
+            guard let self = self else { return } // Проверка на существование ProfileViewController
+            self.updateAvatar()
+        })
+        updateAvatar()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
+        profileImageView.clipsToBounds = true
     }
     
     // MARK: Methods
+    // Метод обновляет данные профиля
+    private func updateAvatar(){
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let imageUrl = URL(string: profileImageURL),
+            let placeHolderImage = UIImage(named: "PlaceHolderForProfileImage")
+        else { return }
+        profileImageView.backgroundColor = .clear
+        let processor = RoundCornerImageProcessor(cornerRadius: 61, backgroundColor: .clear)
+        profileImageView.kf.setImage(with: imageUrl,
+                                     placeholder: placeHolderImage,
+                                     options: [.processor(processor)])
+    }
+    // Метод обновляет фото профиля
+    private func updateProfileDetails(profile: Profile){
+        self.nameLabel.text = profile.name
+        self.statusLabel.text = profile.bio
+        self.usernameLabel.text = profile.loginName
+    }
     
     private func addSubview(_ subview: UIView) {
         view.addSubview(subview)
