@@ -97,5 +97,15 @@ extension ImagesListViewController: UITableViewDataSource {
         
         return imageListCell // 4 Возвращаем получившуюся строку
     }
-}
+    // Метод вызывается прямо перед тем, как ячейка таблицы будет показана на экране
+    func tableView(
+      _ tableView: UITableView,
+      willDisplay cell: UITableViewCell,
+      forRowAt indexPath: IndexPath
+    ) {
+        if indexPath.row + 1 == photos.count{
+            fetchPhotosNextPage()
+        }
+    }
+    }
 
