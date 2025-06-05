@@ -24,4 +24,7 @@ final class KeychainStorage{
     var tokenDelete: Bool?{
         get {KeychainWrapper.standard.removeObject(forKey: KeyForKeychain.authToken.rawValue)}
     }
+    func deleteToken() -> Bool {
+        return KeychainWrapper.standard.removeObject(forKey: KeyForKeychain.authToken.rawValue)
+    }
 }
