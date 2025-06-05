@@ -73,6 +73,9 @@
                                                     </constraints>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" image="unactiveLike"/>
+                                                    <connections>
+                                                        <action selector="likeButtonClicked" destination="qNN-eF-xnt" eventType="touchUpInside" id="7ve-j7-Dio"/>
+                                                    </connections>
                                                 </button>
                                             </subviews>
                                             <color key="backgroundColor" name="YP Black (iOS)"/>
@@ -198,7 +201,6 @@
         <!--Auth View Controller-->
         <scene sceneID="E3K-tF-GjU">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="bZd-aP-U5p" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
                 <viewController storyboardIdentifier="AuthViewController" id="HlD-kj-4vk" customClass="AuthViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ujA-d6-01f">
                         <rect key="frame" x="0.0" y="0.0" width="440" height="956"/>
@@ -225,6 +227,7 @@
                         <outlet property="enterButton" destination="SiF-dX-60i" id="UrX-sq-wEU"/>
                     </connections>
                 </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="bZd-aP-U5p" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="823.63636363636374" y="-1292.2594142259416"/>
         </scene>

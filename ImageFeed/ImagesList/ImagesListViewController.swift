@@ -1,6 +1,7 @@
-//  ViewController.swift
+//  ImagesListViewController.swift
 
 import UIKit
+import Kingfisher
 
 final class ImagesListViewController: UIViewController {
     
@@ -8,32 +9,21 @@ final class ImagesListViewController: UIViewController {
     
     @IBOutlet weak var tabBar: UITabBarItem!
     @IBOutlet private var tableView: UITableView!
-    private let photosName: [String] = Array(0..<20).map { "\($0)"}
-    private lazy var dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .none
-        formatter.dateFormat = "d MMMM yyyy"
-        formatter.locale = Locale(identifier: "ru_RU")
-        return formatter}()
-    private var todayDate = Date()
+    let imagesListService = ImagesListService()
+    var photos = [Photo]()
     
     // MARK: LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0) // Добавляем отступы сверху и снизу для контента таблицы
-    }
-    
-    // Метод настройки кастомной строки
-    func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
-        cell.likeButton.setTitle("", for: .normal)
-        indexPath.row % 2 == 0 ? cell.likeButton.setImage(.unactiveLike, for: .normal) : cell.likeButton.setImage(.activeLike, for: .normal)
         
-        // Проверяем есть ли значение по адресу
-        guard let newImage = UIImage(named: "\(indexPath.row)") else { return }
-        cell.cellImageView.image = newImage // задаем картинку
-        cell.dateLabel.text = dateFormatter.string(from: todayDate) // задаем дату
-        cell.dateLabel.font = UIFont(name: "SFPro-Regular", size: 13)
+        imagesListService.fetchPhotosNextPage()
+        
+        tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
+        
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(updateTableViewAnimated),
+                                               name: ImagesListService.didChangeNotification,
+                                               object: nil)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?){
@@ -45,10 +35,30 @@ final class ImagesListViewController: UIViewController {
                 assertionFailure("Invalid segue destination")
                 return
             }
-            let image = UIImage(named: photosName[indexPath.row])
-            viewController.image = image // передаем картинку внутрь singleView в свойство image
+            
+            let stringBigImage = photos[indexPath.row].largeImageURL
+            guard let urlBigImage = URL(string: stringBigImage) else { return }
+            viewController.imageURL = urlBigImage// передаем картинку внутрь singleView в свойство image
         } else {
             super.prepare(for: segue, sender: sender)
+        }
+    }
+    
+    // Метод добавляет новые строки при обновлении массива
+    @objc func updateTableViewAnimated(){
+        
+        let oldCount = photos.count
+        let newCount = imagesListService.photos.count
+        photos = imagesListService.photos
+        var indexPaths: [IndexPath] = []
+        
+        if oldCount != newCount {
+            tableView.performBatchUpdates {
+                for i in oldCount..<newCount {
+                    indexPaths.append(IndexPath(row: i, section: 0))
+                }
+                tableView.insertRows(at: indexPaths, with: .automatic)
+            }
         }
     }
 }
@@ -60,20 +70,6 @@ extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: Constants.showSingleImage, sender: indexPath)
     }
-    
-    // Динамический расчет высоты строки
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        guard let image = UIImage(named: photosName[indexPath.row]) else {
-            return 0
-        }
-        
-        let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
-        let imageViewWidth = tableView.bounds.width - imageInsets.left - imageInsets.right
-        let imageWidth = image.size.width
-        let scale = imageViewWidth / imageWidth
-        let cellHeight = image.size.height * scale + imageInsets.top + imageInsets.bottom
-        return cellHeight
-    }
 }
 
 // MARK: UITableViewDataSource
@@ -81,31 +77,77 @@ extension ImagesListViewController: UITableViewDataSource {
     
     // Метод определяет количество строк в секции таблицы
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        photosName.count
+        photos.count
     }
     
     // Метод создает и настраивает ячейку для конкретной строки
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath) // 1 получаем ячейку из пула переиспользуемых ячеек
+        let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath)
         
-        guard let imageListCell = cell as? ImagesListCell else { // 2 Проверяем что она нужного типа
+        guard let imageListCell = cell as? ImagesListCell else {
             return UITableViewCell()
         }
-        
-        configCell(for: imageListCell, with: indexPath) // 3 Вызываем метод настройки
-        
-        return imageListCell // 4 Возвращаем получившуюся строку
+        imageListCell.delegate = self
+        imageListCell.configCell(for: imageListCell,
+                                 with: indexPath,
+                                 url: photos[indexPath.row].thumbImageURL,
+                                 tableView: tableView,
+                                 likeStartState: photos[indexPath.row].isLiked
+        )
+        return imageListCell
     }
+    
     // Метод вызывается прямо перед тем, как ячейка таблицы будет показана на экране
     func tableView(
-      _ tableView: UITableView,
-      willDisplay cell: UITableViewCell,
-      forRowAt indexPath: IndexPath
+        _ tableView: UITableView,
+        willDisplay cell: UITableViewCell,
+        forRowAt indexPath: IndexPath
     ) {
         if indexPath.row + 1 == photos.count{
-            fetchPhotosNextPage()
+            imagesListService.fetchPhotosNextPage()
         }
     }
-    }
+}
 
+extension ImagesListViewController: ImagesListCellDelegate {
+    func imageListCellDidTapLike(_ cell: ImagesListCell) {
+        
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        let photo = photos[indexPath.row]
+        
+        UIBlockingProgressHUD.show()
+        
+        imagesListService.changeLike(photoId: photo.id, isLike: photo.isLiked) { result in
+            switch result {
+            case .success(_):
+                print("[imageListCellDidTapLike]: успешный запрос")
+                DispatchQueue.main.async {
+                    // Поиск индекса элемента
+                    if let index = self.photos.firstIndex(where: { $0.id == photo.id }){
+                    // Текущий элемент
+                    let photo = self.photos[index]
+                    
+                        let newPhoto = Photo(id: photo.id,
+                                             size: photo.size,
+                                             createdAt: photo.createdAt,
+                                             welcomeDescription: photo.welcomeDescription,
+                                             thumbImageURL: photo.thumbImageURL,
+                                             largeImageURL: photo.largeImageURL,
+                                             isLiked: !photo.isLiked)
+                        
+                        self.photos[index] = newPhoto
+                        
+                        cell.setIsLiked(for: cell, with: !photo.isLiked)
+                        UIBlockingProgressHUD.dismiss()
+                  }
+                }
+            case . failure(_):
+                print("[imageListCellDidTapLike]: ошибка в запросе")
+                UIBlockingProgressHUD.dismiss()
+                
+                // TODO: Показать ошибку с использованием UIAlertController
+            }
+        }
+    }
+}

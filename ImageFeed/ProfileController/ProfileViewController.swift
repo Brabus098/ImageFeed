@@ -13,6 +13,16 @@ final class ProfileViewController: UIViewController {
     private var statusLabel = UILabel()
     private var logoutButton = UIButton()
     private var profileService = ProfileService.shared
+    private var shimmerPlaceholders: [ShimmerView] = []
+    private var animationLayers = Set<CALayer>()
+    private var imageStatus: ViewDownloadStatus = .someoneNoReady
+    private var labelsStatus: ViewDownloadStatus = .someoneNoReady
+
+    private enum ViewDownloadStatus{
+        case imageIsReady
+        case labelsIsReady
+        case someoneNoReady
+    }
     
     private enum ConstantsProfile {
         static let avatarSize: CGFloat = 70
@@ -28,30 +38,42 @@ final class ProfileViewController: UIViewController {
     // MARK: LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setUpImage(profileImage:profileImageView)
         setUpProfileName(profileName: nameLabel, profileImage: profileImageView)
         setUpEmail(email: usernameLabel, profileName: nameLabel, profileImage: profileImageView)
         setUpStatus(email: usernameLabel, status: statusLabel, profileImage: profileImageView)
         setUpExitButton(exitButton: logoutButton, profileImage: profileImageView)
-        
+       
         if let profile = profileService.profile {
             updateProfileDetails(profile: profile)
         }
         
         profileImageServiceObserver = NotificationCenter.default.addObserver(forName: ProfileImageService.didChangeNotification,
                                                                              object: nil,
-                                                                             queue: .main,
+                                                                             queue: nil,
                                                                              using: { [weak self] _ in
             guard let self = self else { return } // Проверка на существование ProfileViewController
             self.updateAvatar()
         })
-        updateAvatar()
-    }
+        
+       // Обновление аватарки
+       updateAvatar()
+     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
         profileImageView.clipsToBounds = true
+//        showShimmer(over: profileImageView)
+//        showShimmer(over: usernameLabel)
+//        showShimmer(over: statusLabel)
+//        showShimmer(over: nameLabel)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        //hideAllShimmers(animationSet: animationLayers)
     }
     
     // MARK: Methods
@@ -62,17 +84,29 @@ final class ProfileViewController: UIViewController {
             let imageUrl = URL(string: profileImageURL),
             let placeHolderImage = UIImage(named: "PlaceHolderForProfileImage")
         else { return }
+        
         profileImageView.backgroundColor = .clear
         let processor = RoundCornerImageProcessor(cornerRadius: 61, backgroundColor: .clear)
         profileImageView.kf.setImage(with: imageUrl,
                                      placeholder: placeHolderImage,
                                      options: [.processor(processor)])
+        imageStatus = .imageIsReady
+        downloadStatusFor(image: imageStatus, labels: labelsStatus)
     }
     // Метод обновляет фото профиля
     private func updateProfileDetails(profile: Profile){
         self.nameLabel.text = profile.name
         self.statusLabel.text = profile.bio
         self.usernameLabel.text = profile.loginName
+        labelsStatus = .labelsIsReady
+        downloadStatusFor(image: imageStatus, labels: labelsStatus)
+
+    }
+    
+    private func downloadStatusFor(image: ViewDownloadStatus, labels: ViewDownloadStatus){
+        if image == .imageIsReady, labels == .labelsIsReady {
+            //hideAllShimmers(animationSet: animationLayers)
+        }
     }
     
     private func addSubview(_ subview: UIView) {
@@ -85,15 +119,21 @@ final class ProfileViewController: UIViewController {
         
         let image = UIImage(named: "ProfilePhoto")
         profileImage.image = image
+        profileImage.backgroundColor = UIColor.clear
         
         addSubview(profileImage)
+        profileImage.frame = CGRect(x: 0, y: 0, width: 70, height: 70)
+        
+        view.layoutIfNeeded()
+        showShimmer(over:profileImage)
         
         NSLayoutConstraint.activate([
             profileImage.heightAnchor.constraint(equalToConstant: ConstantsProfile.avatarSize),
             profileImage.widthAnchor.constraint(equalTo: profileImage.heightAnchor),
             profileImage.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor, constant: ConstantsProfile.topInset),
             profileImage.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: ConstantsProfile.sideInset)
-        ])}
+        ])
+    }
     
     private func setUpProfileName(profileName: UILabel, profileImage: UIImageView){
         profileName.text = "Екатерина Новикова"
@@ -101,6 +141,8 @@ final class ProfileViewController: UIViewController {
         profileName.font = UIFont(name: "SFPro-Bold", size: ConstantsProfile.nameFontSize)
         
         addSubview(profileName)
+        view.layoutIfNeeded()
+        showShimmer(over: profileName)
         
         NSLayoutConstraint.activate([
             profileName.leadingAnchor.constraint(equalTo: profileImage.leadingAnchor),
@@ -113,6 +155,8 @@ final class ProfileViewController: UIViewController {
         email.font = UIFont(name: "SFPro-Regular", size: ConstantsProfile.secondaryFontSize)
         
         addSubview(email)
+        view.layoutIfNeeded()
+        showShimmer(over: email)
         
         NSLayoutConstraint.activate([
             email.leadingAnchor.constraint(equalTo: profileImage.leadingAnchor),
@@ -125,6 +169,9 @@ final class ProfileViewController: UIViewController {
         status.font = UIFont(name: "SFPro-Regular", size: ConstantsProfile.secondaryFontSize)
         
         addSubview(status)
+        view.layoutIfNeeded()
+        showShimmer(over: status)
+        
         
         NSLayoutConstraint.activate([
             status.leadingAnchor.constraint(equalTo: profileImage.leadingAnchor),
@@ -135,8 +182,11 @@ final class ProfileViewController: UIViewController {
     private func setUpExitButton(exitButton: UIButton, profileImage: UIImageView){
         exitButton.tintColor = .ypRedIOS
         exitButton.setImage(UIImage(named: "Exit"), for: .normal)
-        
+        exitButton.addTarget(self, action: #selector(exitAction), for: .touchUpInside)
+    
         addSubview(exitButton)
+        showShimmer(over:exitButton)
+
         
         NSLayoutConstraint.activate([
             exitButton.centerYAnchor.constraint(equalTo: profileImage.centerYAnchor),
@@ -144,5 +194,48 @@ final class ProfileViewController: UIViewController {
             exitButton.widthAnchor.constraint(equalToConstant: ConstantsProfile.exitWidt),
             exitButton.heightAnchor.constraint(equalTo: exitButton.widthAnchor)
         ])
+    }
+    
+    private func showShimmer(over view: UIView) {
+        let gradient = CAGradientLayer()
+        gradient.frame = view.bounds
+        gradient.locations = [0, 0.1, 0.3]
+        
+        gradient.colors = [
+            UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1).cgColor,
+            UIColor(red: 0.531, green: 0.533, blue: 0.553, alpha: 1).cgColor,
+            UIColor(red: 0.431, green: 0.433, blue: 0.453, alpha: 1).cgColor
+        ]
+        
+        gradient.startPoint = CGPoint(x: 0, y: 0.5)
+        gradient.endPoint = CGPoint(x: 1, y: 0.5)
+        gradient.cornerRadius = view.frame.height / 2
+        gradient.masksToBounds = true
+
+        let gradientChangeAnimation = CABasicAnimation(keyPath: "locations")
+        gradientChangeAnimation.duration = 1.0
+        gradientChangeAnimation.repeatCount = .infinity
+        gradientChangeAnimation.fromValue = [0, 0.1, 0.3]
+        gradientChangeAnimation.toValue = [0, 0.8, 1]
+        gradient.add(gradientChangeAnimation, forKey: "locationsChange")
+        
+        animationLayers.insert(gradient)
+        view.layer.addSublayer(gradient)
+    }
+    
+    private func hideAllShimmers(animationSet:  Set<CALayer>) {
+        animationLayers.forEach { gradient in
+            gradient.removeFromSuperlayer()
+        }
+    }
+    
+    @objc private func exitAction(){
+        ProfileLogoutService.shared.logout()
+        let rootController = SplashViewController()
+        guard let window = UIApplication.shared.windows.first else {
+            assertionFailure("Invalid window configuration")
+            return
+        }
+        window.rootViewController = rootController
     }
 }
