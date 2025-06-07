@@ -1,7 +1,6 @@
 //  ProfileLogoutService.swift
 
 import Foundation
-
 import WebKit
 
 final class ProfileLogoutService {

@@ -9,7 +9,7 @@ final class ImagesListViewController: UIViewController {
     
     @IBOutlet weak var tabBar: UITabBarItem!
     @IBOutlet private var tableView: UITableView!
-    let imagesListService = ImagesListService()
+    private let imagesListService = ImagesListService()
     var photos = [Photo]()
     
     // MARK: LifeCycle
@@ -45,7 +45,7 @@ final class ImagesListViewController: UIViewController {
     }
     
     // Метод добавляет новые строки при обновлении массива
-    @objc func updateTableViewAnimated(){
+    @objc private func updateTableViewAnimated(){
         
         let oldCount = photos.count
         let newCount = imagesListService.photos.count
@@ -66,7 +66,6 @@ final class ImagesListViewController: UIViewController {
 // MARK: UITableViewDelegate
 extension ImagesListViewController: UITableViewDelegate {
     
-    // Метод вызывается когда пользователь нажимает на ячейку
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: Constants.showSingleImage, sender: indexPath)
     }
@@ -75,12 +74,10 @@ extension ImagesListViewController: UITableViewDelegate {
 // MARK: UITableViewDataSource
 extension ImagesListViewController: UITableViewDataSource {
     
-    // Метод определяет количество строк в секции таблицы
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         photos.count
     }
     
-    // Метод создает и настраивает ячейку для конкретной строки
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath)
@@ -93,7 +90,8 @@ extension ImagesListViewController: UITableViewDataSource {
                                  with: indexPath,
                                  url: photos[indexPath.row].thumbImageURL,
                                  tableView: tableView,
-                                 likeStartState: photos[indexPath.row].isLiked
+                                 likeStartState: photos[indexPath.row].isLiked,
+                                 data: photos[indexPath.row].createdAt
         )
         return imageListCell
     }
@@ -121,13 +119,11 @@ extension ImagesListViewController: ImagesListCellDelegate {
         imagesListService.changeLike(photoId: photo.id, isLike: photo.isLiked) { result in
             switch result {
             case .success(_):
-                print("[imageListCellDidTapLike]: успешный запрос")
                 DispatchQueue.main.async {
                     // Поиск индекса элемента
                     if let index = self.photos.firstIndex(where: { $0.id == photo.id }){
-                    // Текущий элемент
-                    let photo = self.photos[index]
-                    
+                        // Текущий элемент
+                        let photo = self.photos[index]
                         let newPhoto = Photo(id: photo.id,
                                              size: photo.size,
                                              createdAt: photo.createdAt,
@@ -140,13 +136,11 @@ extension ImagesListViewController: ImagesListCellDelegate {
                         
                         cell.setIsLiked(for: cell, with: !photo.isLiked)
                         UIBlockingProgressHUD.dismiss()
-                  }
+                    }
                 }
             case . failure(_):
                 print("[imageListCellDidTapLike]: ошибка в запросе")
                 UIBlockingProgressHUD.dismiss()
-                
-                // TODO: Показать ошибку с использованием UIAlertController
             }
         }
     }

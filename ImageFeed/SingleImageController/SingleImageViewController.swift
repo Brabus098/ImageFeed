@@ -128,30 +128,7 @@ private extension CGFloat {
 }
 
 extension SingleImageViewController{
-    
-//    private func loadImageWithKf(){
-//        UIBlockingProgressHUD.show()
-//        displayedImageView.kf.setImage(with: imageURL,
-//                                       placeholder: UIImage(named: "SplashForBigImage")) { [weak self] result in
-//            UIBlockingProgressHUD.dismiss()
-//            
-//            guard let self else { return }
-//            
-//            switch result {
-//            case .success(let value):
-//                self.displayedImageView.image = value.image
-//                DispatchQueue.main.async {
-//                    self.rescaleAndCenterImageInScrollView(image: value.image)
-//                }
-//            case .failure(let error):
-//                print("Ошибка загрузки: \(error)")
-//                showError()
-//            }
-//        }
-//    }
-    
     private func showError(){
-
         SingleAlertPresenter.shared.showAlert(presentIn: self,
                                               title: "Что-то пошло не так. Попробовать ещё раз?",
                                               optionalMessage: nil,
@@ -162,8 +139,6 @@ extension SingleImageViewController{
                                               optionalStyleForSecondAction: .default,
                                               secondCompetition: {
             self.loadImage() // TODO: заменить на LOAD потом удалить loadImageWithKf
-        },
-                                              mode: .dual)
+        }, mode: .dual)
     }
 }
-
