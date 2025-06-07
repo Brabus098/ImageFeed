@@ -49,13 +49,13 @@ final class ImagesListViewController: UIViewController {
         
         let oldCount = photos.count
         let newCount = imagesListService.photos.count
-        photos = imagesListService.photos
         var indexPaths: [IndexPath] = []
         
         if oldCount != newCount {
             tableView.performBatchUpdates {
                 for i in oldCount..<newCount {
                     indexPaths.append(IndexPath(row: i, section: 0))
+                    photos.append(imagesListService.photos[i])
                 }
                 tableView.insertRows(at: indexPaths, with: .automatic)
             }
@@ -101,7 +101,7 @@ extension ImagesListViewController: UITableViewDataSource {
         _ tableView: UITableView,
         willDisplay cell: UITableViewCell,
         forRowAt indexPath: IndexPath
-    ) {
+    ){
         if indexPath.row + 1 == photos.count{
             imagesListService.fetchPhotosNextPage()
         }
@@ -132,7 +132,9 @@ extension ImagesListViewController: ImagesListCellDelegate {
                                              largeImageURL: photo.largeImageURL,
                                              isLiked: !photo.isLiked)
                         
-                        self.photos[index] = newPhoto
+                        var newPhotos = self.photos
+                        newPhotos[index] = newPhoto
+                        self.photos = newPhotos
                         
                         cell.setIsLiked(for: cell, with: !photo.isLiked)
                         UIBlockingProgressHUD.dismiss()
