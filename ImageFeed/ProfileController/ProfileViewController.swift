@@ -38,7 +38,7 @@ final class ProfileViewController: UIViewController {
     // MARK: LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         setUpImage(profileImage:profileImageView)
         setUpProfileName(profileName: nameLabel, profileImage: profileImageView)
         setUpEmail(email: usernameLabel, profileName: nameLabel, profileImage: profileImageView)
@@ -65,33 +65,37 @@ final class ProfileViewController: UIViewController {
         super.viewDidLayoutSubviews()
         profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
         profileImageView.clipsToBounds = true
-//        showShimmer(over: profileImageView)
-//        showShimmer(over: usernameLabel)
-//        showShimmer(over: statusLabel)
-//        showShimmer(over: nameLabel)
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        //hideAllShimmers(animationSet: animationLayers)
+    override func viewIsAppearing(_ animated:Bool) {
+        super.viewIsAppearing(animated)
+        if imageStatus != .imageIsReady || labelsStatus != .labelsIsReady {
+            
+                       self.showShimmer(over: self.profileImageView)
+                       self.showShimmer(over: self.usernameLabel)
+                       self.showShimmer(over: self.statusLabel)
+                       self.showShimmer(over: self.nameLabel)
+                   
+        } else if imageStatus == .imageIsReady || labelsStatus == .labelsIsReady{
+            downloadStatusFor(image: imageStatus, labels: labelsStatus)
+        }
     }
-    
     // MARK: Methods
     // Метод обновляет данные профиля
-    private func updateAvatar(){
-        guard
-            let profileImageURL = ProfileImageService.shared.avatarURL,
-            let imageUrl = URL(string: profileImageURL),
-            let placeHolderImage = UIImage(named: "PlaceHolderForProfileImage")
-        else { return }
-        
-        profileImageView.backgroundColor = .clear
-        let processor = RoundCornerImageProcessor(cornerRadius: 61, backgroundColor: .clear)
-        profileImageView.kf.setImage(with: imageUrl,
-                                     placeholder: placeHolderImage,
-                                     options: [.processor(processor)])
-        imageStatus = .imageIsReady
-        downloadStatusFor(image: imageStatus, labels: labelsStatus)
+    private func updateAvatar() {
+        guard let profileImageURL = ProfileImageService.shared.avatarURL,
+              let imageUrl = URL(string: profileImageURL),
+              let placeHolderImage = UIImage(named: "PlaceHolderForProfileImage") else {
+            return
+        }
+            self.profileImageView.backgroundColor = .clear
+            let processor = RoundCornerImageProcessor(cornerRadius: 61, backgroundColor: .clear)
+            self.profileImageView.kf.setImage(with: imageUrl,
+                                       placeholder: placeHolderImage,
+                                       options: [.processor(processor)]) { _ in
+                self.imageStatus = .imageIsReady
+                self.downloadStatusFor(image: self.imageStatus, labels: self.labelsStatus)
+        }
     }
     // Метод обновляет фото профиля
     private func updateProfileDetails(profile: Profile){
@@ -99,14 +103,10 @@ final class ProfileViewController: UIViewController {
         self.statusLabel.text = profile.bio
         self.usernameLabel.text = profile.loginName
         labelsStatus = .labelsIsReady
-        downloadStatusFor(image: imageStatus, labels: labelsStatus)
-
     }
     
     private func downloadStatusFor(image: ViewDownloadStatus, labels: ViewDownloadStatus){
-        if image == .imageIsReady, labels == .labelsIsReady {
-            //hideAllShimmers(animationSet: animationLayers)
-        }
+            hideAllShimmers(animationSet: animationLayers)
     }
     
     private func addSubview(_ subview: UIView) {
@@ -122,10 +122,6 @@ final class ProfileViewController: UIViewController {
         profileImage.backgroundColor = UIColor.clear
         
         addSubview(profileImage)
-        profileImage.frame = CGRect(x: 0, y: 0, width: 70, height: 70)
-        
-        view.layoutIfNeeded()
-        showShimmer(over:profileImage)
         
         NSLayoutConstraint.activate([
             profileImage.heightAnchor.constraint(equalToConstant: ConstantsProfile.avatarSize),
@@ -141,8 +137,6 @@ final class ProfileViewController: UIViewController {
         profileName.font = UIFont(name: "SFPro-Bold", size: ConstantsProfile.nameFontSize)
         
         addSubview(profileName)
-        view.layoutIfNeeded()
-        showShimmer(over: profileName)
         
         NSLayoutConstraint.activate([
             profileName.leadingAnchor.constraint(equalTo: profileImage.leadingAnchor),
@@ -155,8 +149,6 @@ final class ProfileViewController: UIViewController {
         email.font = UIFont(name: "SFPro-Regular", size: ConstantsProfile.secondaryFontSize)
         
         addSubview(email)
-        view.layoutIfNeeded()
-        showShimmer(over: email)
         
         NSLayoutConstraint.activate([
             email.leadingAnchor.constraint(equalTo: profileImage.leadingAnchor),
@@ -169,9 +161,6 @@ final class ProfileViewController: UIViewController {
         status.font = UIFont(name: "SFPro-Regular", size: ConstantsProfile.secondaryFontSize)
         
         addSubview(status)
-        view.layoutIfNeeded()
-        showShimmer(over: status)
-        
         
         NSLayoutConstraint.activate([
             status.leadingAnchor.constraint(equalTo: profileImage.leadingAnchor),
@@ -185,9 +174,7 @@ final class ProfileViewController: UIViewController {
         exitButton.addTarget(self, action: #selector(exitAction), for: .touchUpInside)
     
         addSubview(exitButton)
-        showShimmer(over:exitButton)
 
-        
         NSLayoutConstraint.activate([
             exitButton.centerYAnchor.constraint(equalTo: profileImage.centerYAnchor),
             exitButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: ConstantsProfile.trailingInsert),
