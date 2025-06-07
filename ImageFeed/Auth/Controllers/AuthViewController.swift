@@ -58,7 +58,7 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         
         // Button
-    
+        
         self.enterButton.setTitle("Войти", for: .normal)
         self.enterButton.setTitleColor(.ypBlackIOS, for: .normal)
         self.enterButton.layer.masksToBounds = true

@@ -230,12 +230,24 @@ final class ProfileViewController: UIViewController {
     }
     
     @objc private func exitAction(){
-        ProfileLogoutService.shared.logout()
-        let rootController = SplashViewController()
-        guard let window = UIApplication.shared.windows.first else {
-            assertionFailure("Invalid window configuration")
-            return
-        }
-        window.rootViewController = rootController
+        
+        SingleAlertPresenter.shared.showAlert(presentIn: self,
+                                              title: "Пока, пока!",
+                                              optionalMessage: "Уверенны что хотите выйти?",
+                                              firstActionWithTitle: "Нет",
+                                              firstActionWithStyle: .default,
+                                              firstCompetition: nil,
+                                              optionalActionTitle: "Да",
+                                              optionalStyleForSecondAction: .cancel,
+                                              secondCompetition: {
+            ProfileLogoutService.shared.logout()
+            let rootController = SplashViewController()
+            guard let window = UIApplication.shared.windows.first else {
+                assertionFailure("Invalid window configuration")
+                return
+            }
+            window.rootViewController = rootController
+        },
+                                              mode: .dual)
     }
 }

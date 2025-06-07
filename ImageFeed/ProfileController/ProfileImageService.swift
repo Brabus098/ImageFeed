@@ -44,7 +44,7 @@ final class ProfileImageService {
                                                 userInfo: ["URL": result ])
             }
         }
-       
+        
         // Создаем новую задачу
         let session = URLSession.shared
         let task = session.objectTask(for: getRequest) { [weak self] (result: Result<UserResult, Error>) in

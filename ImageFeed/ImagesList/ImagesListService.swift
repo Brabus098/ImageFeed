@@ -5,19 +5,12 @@ import Foundation
 final class ImagesListService {
     
     private(set) var photos: [Photo] = [] // Массив с новыми фото объектами
-    var lastLoadedPage: Int? // Крайний номер загруженной страницы
-    var state: URLSessionTask? // Актулальное состояние
-    var storage = KeychainStorage()
+    private var lastLoadedPage: Int? // Крайний номер загруженной страницы
+    private var state: URLSessionTask? // Актулальное состояние
+    private var storage = KeychainStorage()
     
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
     let queueForRace = DispatchQueue(label: "serial")
-    
-    private func dateFromString(_ dateString: String) -> Date? {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        return dateFormatter.date(from: dateString)
-    }
     
     private func getPhotoRequest(page number: Int) -> URLRequest? {
         guard var urlComponents = URLComponents(string: "https://api.unsplash.com/photos") else {
@@ -41,7 +34,7 @@ final class ImagesListService {
     
     // Метод получения новой страницы
     func fetchPhotosNextPage() {
-        let nextPage = (self.lastLoadedPage ?? 0) + 1 // было так (lastLoadedPage?.number ?? 0) + 1
+        let nextPage = (self.lastLoadedPage ?? 0) + 1
         let session = URLSession.shared
         
         let pushCompletionOnTheMainThread: ([Photo]) -> Void = {newPhotos in
@@ -58,9 +51,9 @@ final class ImagesListService {
             
             // отмена существующешего запроса
             guard self.state == nil else {
-                    print("[fetchPhotosNextPage]: Запрос уже выполняется — повторный вызов проигнорирован")
-                    return
-                }
+                print("[fetchPhotosNextPage]: Запрос уже выполняется — повторный вызов проигнорирован")
+                return
+            }
             // Начало нового запроса
             guard let newRequest = self.getPhotoRequest(page: nextPage) else { return }
             let task = session.objectTask(for: newRequest){(result: Result<[PhotoResult], Error>) in
@@ -74,17 +67,21 @@ final class ImagesListService {
                 case .success(let data):
                     var photoArray = [Photo]()
                     data.forEach { photoResult in
+                        let createdAt = photoResult.createdAt // "2016-05-03T11:00:28-04:00"
+                        let dateFormatter = DateFormatterForCell.DateFormatterUtils.ISOFormat
+                        let date = dateFormatter.date(from: createdAt ?? "") // задаем пустую строку в случае отсутствия значения
+                        
                         photoArray.append(Photo(id: photoResult.id,
                                                 size: CGSize(width: photoResult.width, height: photoResult.height),
-                                                createdAt: self.dateFromString(photoResult.createdAt),
+                                                createdAt:date,
                                                 welcomeDescription: photoResult.description,
                                                 thumbImageURL: photoResult.urls.thumb,
                                                 largeImageURL: photoResult.urls.full,
                                                 isLiked: photoResult.liked))
                     }
                     pushCompletionOnTheMainThread(photoArray)
-                case .failure(_):
-                    print("[fetchPhotosNextPage]: ошибка при получении модели")
+                case .failure(let error):
+                    print("[fetchPhotosNextPage]: ошибка при получении модели - \(error.localizedDescription)")
                     return
                 }
             }
@@ -106,7 +103,7 @@ extension ImagesListService {
         
         request.setValue("Bearer \(storage.token ?? "InavalidToken")", forHTTPHeaderField: "Authorization")
         request.httpMethod = isLike ? "DELETE" : "POST"
-     
+        
         var _ = URLSession.shared.objectTask(for: request) { (result: Result<PhotoLike, Error>) in
             switch result {
             case .success(let result):

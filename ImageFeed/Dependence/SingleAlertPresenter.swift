@@ -28,20 +28,16 @@ final class SingleAlertPresenter{
                                       message: optionalMessage ?? "",
                                       preferredStyle: .alert)
         
-        let action = UIAlertAction(title: firstActionWithTitle, style: firstActionWithStyle){_ in firstCompetition?()}
+        let action = UIAlertAction(title: firstActionWithTitle, style: firstActionWithStyle) {_ in firstCompetition?()}
         
         let secondAction = UIAlertAction(title: optionalActionTitle,
-                                         style: optionalStyleForSecondAction ?? .default){_ in
-            secondCompetition?()
-        }
+                                         style: optionalStyleForSecondAction ?? .default) { _ in secondCompetition?()}
         
-        if mode == .one {
-            alert.addAction(action)
-        } else {
+        if mode == .one { alert.addAction(action) }
+        else {
             alert.addAction(action)
             alert.addAction(secondAction)
         }
-        
         controller.present(alert,animated: true)
     }
 }
