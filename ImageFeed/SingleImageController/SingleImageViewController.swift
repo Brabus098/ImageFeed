@@ -1,19 +1,19 @@
 //  SingleImageViewController.swift
 
 import UIKit
+import Kingfisher
 
 final class SingleImageViewController: UIViewController {
     
     // MARK: Properties
     @IBOutlet weak private var scrollView: UIScrollView!
     @IBOutlet weak private var displayedImageView: UIImageView!
+    private let splash = UIImage(named: "SplashForBigImage")
     
     // Свойство вызываемое из другого контролерра для добавление актуальной картинки
-    var image: UIImage? {
-        didSet{ guard isViewLoaded, let image else { return }
-            displayedImageView.image = image
-            displayedImageView.frame.size = image.size
-            rescaleAndCenterImageInScrollView(image: image)
+    var imageURL: URL? {
+        didSet{
+            loadImage()
         }
     }
     
@@ -21,7 +21,7 @@ final class SingleImageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpScrollZoom()
-        setUpImage()
+        loadImage()
     }
     
     @IBAction private func didTapBackButton() {
@@ -29,6 +29,7 @@ final class SingleImageViewController: UIViewController {
     }
     
     @IBAction private func didTapShareButton() {
+        let image = displayedImageView.image
         guard let image else { return }
         
         let share = UIActivityViewController(
@@ -39,24 +40,28 @@ final class SingleImageViewController: UIViewController {
     }
     
     private func rescaleAndCenterImageInScrollView(image: UIImage) {
+        // 1. Сбрасываем zoom scale
+        scrollView.setZoomScale(1.0, animated: false)
         
-        let minZoomScale = scrollView.minimumZoomScale
-        let maxZoomScale = scrollView.maximumZoomScale
-        view.layoutIfNeeded() // Обновляем размеры scrollView
+        // 2. Устанавливаем размер UIImageView равным размеру изображения
+        displayedImageView.frame = CGRect(origin: .zero, size: image.size)
+        scrollView.contentSize = image.size
+        
+        // 3. Вычисляем масштаб
         let visibleRectSize = scrollView.bounds.size
         let imageSize = image.size
         
-        // Масштабирование изображения для заполнения экрана
         let hScale = visibleRectSize.width / imageSize.width
         let vScale = visibleRectSize.height / imageSize.height
-        let scale = min(maxZoomScale, max(minZoomScale, max(hScale, vScale))) // Растягиваем по большей стороне
+        let scale = min(scrollView.maximumZoomScale, max(scrollView.minimumZoomScale, max(hScale, vScale)))
+        
+        // 4. Применяем масштаб
         scrollView.setZoomScale(scale, animated: false)
         
-        // Центрирование изображения
+        // 5. Центрируем изображение
         scrollView.layoutIfNeeded()
-        let newContentSize = scrollView.contentSize
-        let offsetX = max(0, (newContentSize.width - visibleRectSize.width) / 2)
-        let offsetY = max(0, (newContentSize.height - visibleRectSize.height) / 2)
+        let offsetX = max(0, (scrollView.contentSize.width - visibleRectSize.width) / 2)
+        let offsetY = max(0, (scrollView.contentSize.height - visibleRectSize.height) / 2)
         scrollView.contentOffset = CGPoint(x: offsetX, y: offsetY)
     }
     
@@ -66,11 +71,35 @@ final class SingleImageViewController: UIViewController {
         scrollView.bounces = true
     }
     
-    private func setUpImage(){
-        if let newImage = image {
-            displayedImageView.image = newImage
-            displayedImageView.frame.size = newImage.size
-            rescaleAndCenterImageInScrollView(image: newImage)
+    private func loadImage() {
+        guard let imageURL, isViewLoaded else { return }
+        
+        UIBlockingProgressHUD.show()
+        
+        // Показываем сплэш загрузки
+        guard let splash else { return }
+        displayedImageView.frame = CGRect(x: 0, y: 0, width: 83, height: 75)
+        displayedImageView.image = splash
+        displayedImageView.center = view.center
+        
+        displayedImageView.kf.setImage(with: imageURL,
+                                       placeholder: UIImage(named: "SplashForBigImage")) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self else { return }
+            
+            switch result {
+            case .success(let value):
+                self.displayedImageView.image = value.image
+                DispatchQueue.main.async {
+                    self.rescaleAndCenterImageInScrollView(image: value.image)
+                }
+            case .failure(let error):
+                print("Ошибка загрузки: \(error)")
+                DispatchQueue.main.async {
+                    self.showError()
+                }
+            }
         }
     }
 }
@@ -96,4 +125,20 @@ extension SingleImageViewController: UIScrollViewDelegate {
 private extension CGFloat {
     static let minZoomScale: CGFloat = 0.1
     static let maxZoomScale: CGFloat = 1.25
+}
+
+extension SingleImageViewController{
+    private func showError(){
+        SingleAlertPresenter.shared.showAlert(presentIn: self,
+                                              title: "Что-то пошло не так. Попробовать ещё раз?",
+                                              optionalMessage: nil,
+                                              firstActionWithTitle: "Не надо",
+                                              firstActionWithStyle: .cancel,
+                                              firstCompetition: nil,
+                                              optionalActionTitle: "Повторить",
+                                              optionalStyleForSecondAction: .default,
+                                              secondCompetition: {
+            self.loadImage() // TODO: заменить на LOAD потом удалить loadImageWithKf
+        }, mode: .dual)
+    }
 }
