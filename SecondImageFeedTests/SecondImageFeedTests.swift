@@ -1,9 +1,5 @@
-//
 //  SecondImageFeedTests.swift
-//  SecondImageFeedTests
-//
-//  Created by Владимир on 08.06.2025.
-//
+
 @testable import ImageFeed
 import XCTest
 import Foundation
@@ -19,13 +15,12 @@ final class WebViewTests: XCTestCase {
         presenter.view = viewController
         
         //when
-          _ = viewController.view
+        _ = viewController.view
         
         //then
-        XCTAssertTrue(presenter.viewDidLoadCalled) // behaviour verification
+        XCTAssertTrue(presenter.viewDidLoadCalled)
     }
-
-    //Напишите тест testPresenterCallsLoadRequest, чтобы проверить, вызывает ли презентер после вызова presenter.viewDidLoad() метод loadRequest вьюконтроллера.
+    
     func testPresenterCallsLoadRequest(){
         //given
         let webViewController = webViewControllerSpy()
@@ -36,7 +31,7 @@ final class WebViewTests: XCTestCase {
         
         //when
         presenter.viewDidLoad()
-    
+        
         //then
         XCTAssertTrue(webViewController.loadRequestCalled)
     }
@@ -50,20 +45,20 @@ final class WebViewTests: XCTestCase {
         
         //when
         let result = presenter.shouldHideProgress(for: testValue)
-
+        
         //then
         XCTAssertFalse(result)
     }
     
     func testProgressHiddenWhenOne(){
         //given
-        let authHelper = AuthHelper() //Dummy
+        let authHelper = AuthHelper()
         let presenter = WebViewPresenter(authHelper: authHelper)
         let testValue: Float = 1
         
         //when
-        let result = presenter.shouldHideProgress(for: testValue) // return value verification
-
+        let result = presenter.shouldHideProgress(for: testValue)
+        
         //then
         XCTAssertTrue(result)
     }
@@ -75,12 +70,12 @@ final class WebViewTests: XCTestCase {
         
         //when
         let url = authHelper.authURL()
-
+        
         guard let urlString = url?.absoluteString else {
             XCTFail("Auth URL is nil")
             return
         }
-
+        
         //then
         XCTAssertTrue(urlString.contains(configuration.authURLString))
         XCTAssertTrue(urlString.contains(configuration.accessKey))
@@ -94,7 +89,7 @@ final class WebViewTests: XCTestCase {
         components?.queryItems = [URLQueryItem(name: "code", value: "test code")]
         let authHelper = AuthHelper()
         var result: String?
-
+        
         //when
         if let component = components?.url {
             result = authHelper.code(from: component)

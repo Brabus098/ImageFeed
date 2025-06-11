@@ -11,6 +11,7 @@ public protocol WebViewViewControllerProtocol: AnyObject {
 
 final class WebViewViewController: UIViewController & WebViewViewControllerProtocol {
     
+    @IBOutlet weak var backItem: UINavigationItem!
     // MARK: Properties
     
     var presenter: WebViewPresenterProtocol?
@@ -23,11 +24,10 @@ final class WebViewViewController: UIViewController & WebViewViewControllerProto
     // MARK: LifeCycle
     override func viewDidLoad(){
         super.viewDidLoad()
+
         webView.restorationIdentifier = "myWebView"
         setUpViews()
         webView.navigationDelegate = self
-        //loadAuthView() - перенесена в презентер
-        //updateProgress() - пренесена в презентер вызывается там
         presenter?.viewDidLoad()
     }
     
@@ -39,7 +39,6 @@ final class WebViewViewController: UIViewController & WebViewViewControllerProto
             forKeyPath: #keyPath(WKWebView.estimatedProgress),
             options: .new,
             context: nil)
-        //updateProgress() - пренесена в презентер вызывается там
     }
     
     override func observeValue(forKeyPath keyPath: String?,
@@ -79,7 +78,7 @@ final class WebViewViewController: UIViewController & WebViewViewControllerProto
     }
 }
 // MARK: WKNavigationDelegate
-extension WebViewViewController: WKNavigationDelegate { // ЧЕТВЕРТАЯ ОТВЕСТВЕННОСТЬ - настройка UI
+extension WebViewViewController: WKNavigationDelegate {
     // Метод обрабатывает переходы пользователя WebView и ищет код успешности
     func webView(
         _ webView: WKWebView,
@@ -87,14 +86,14 @@ extension WebViewViewController: WKNavigationDelegate { // ЧЕТВЕРТАЯ О
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
         if let code = code(from: navigationAction) {
-            delegate?.webViewViewController(self, didAuthenticateWithCode: code) // -> оповещаем делегата об успешно полученном коде
+            delegate?.webViewViewController(self, didAuthenticateWithCode: code)
             decisionHandler(.cancel)
         } else {
             decisionHandler(.allow)
         }
     }
     // Метод разбирает запрос по частям пытаясь найти сode
-    private func code(from navigatorAction: WKNavigationAction) -> String? { // ВТОРАЯ ОТВЕТСВЕННОСТЬ РАБОТА с API
+    private func code(from navigatorAction: WKNavigationAction) -> String? {
         if let url = navigatorAction.request.url {
             return presenter?.code(from: url)
         }
