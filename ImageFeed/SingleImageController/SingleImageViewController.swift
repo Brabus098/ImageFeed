@@ -138,7 +138,7 @@ extension SingleImageViewController{
                                               optionalActionTitle: "Повторить",
                                               optionalStyleForSecondAction: .default,
                                               secondCompetition: {
-            self.loadImage() // TODO: заменить на LOAD потом удалить loadImageWithKf
+            self.loadImage()
         }, mode: .dual)
     }
 }

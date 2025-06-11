@@ -170,6 +170,9 @@
                                 <color key="tintColor" name="YP White (iOS)"/>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <state key="normal" title=" " image="Backward"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="accessibilityIdentifier" value="Backward"/>
+                                </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="didTapBackButton" destination="W1C-6D-o9b" eventType="touchUpInside" id="afF-3u-frm"/>
                                 </connections>
@@ -263,6 +266,7 @@
                     </view>
                     <navigationItem key="navigationItem" id="pqe-IJ-e7I"/>
                     <connections>
+                        <outlet property="backItem" destination="pqe-IJ-e7I" id="BV3-Gn-2z9"/>
                         <outlet property="progressView" destination="Pez-Bm-2NN" id="BZQ-ZS-yaf"/>
                         <outlet property="webView" destination="Lsa-93-Pwf" id="nuF-Wk-KMv"/>
                     </connections>

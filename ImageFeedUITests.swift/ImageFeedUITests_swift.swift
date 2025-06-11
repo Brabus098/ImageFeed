@@ -4,7 +4,7 @@ class AuthUITests: XCTestCase {
     
     private let app = XCUIApplication()
     private let email = "" // MAIL IS HERE
-    private let password = "" // PASS HERE
+    private let password =  "" // PASS HERE
     
     override func setUp() {
         super.setUp()
@@ -12,7 +12,7 @@ class AuthUITests: XCTestCase {
         app.launch()
     }
     
-    func testAuthFlow() {
+    func testAuth() {
         // 1. Нажать кнопку авторизации
         tapAuthButton()
         
@@ -33,7 +33,7 @@ class AuthUITests: XCTestCase {
     private func tapAuthButton() {
         let authButton = app.buttons["Войти"]
         XCTAssertTrue(authButton.waitForExistence(timeout: 10),
-                     "Кнопка 'Войти' не найдена на экране")
+                      "Кнопка 'Войти' не найдена на экране")
         authButton.tap()
         print("Нажата кнопка авторизации")
     }
@@ -42,7 +42,7 @@ class AuthUITests: XCTestCase {
     private func waitForAuthScreen() -> XCUIElement {
         let authScreen = app.webViews.firstMatch
         XCTAssertTrue(authScreen.waitForExistence(timeout: 15),
-                     "Экран авторизации не загрузился")
+                      "Экран авторизации не загрузился")
         print("Экран авторизации успешно загружен")
         return authScreen
     }
@@ -52,7 +52,7 @@ class AuthUITests: XCTestCase {
         // Ввод email
         let emailField = authScreen.textFields.firstMatch
         XCTAssertTrue(emailField.waitForExistence(timeout: 8),
-                     "Поле для email не найдено")
+                      "Поле для email не найдено")
         emailField.tap()
         emailField.typeText(email)
         print("Введен email: \(email)")
@@ -64,7 +64,7 @@ class AuthUITests: XCTestCase {
         // Ввод пароля
         let passwordField = authScreen.secureTextFields.firstMatch
         XCTAssertTrue(passwordField.waitForExistence(timeout: 8),
-                     "Поле для пароля не найдено")
+                      "Поле для пароля не найдено")
         passwordField.tap()
         slowType(text: password, element: passwordField)
         print("Введен пароль")
@@ -79,7 +79,7 @@ class AuthUITests: XCTestCase {
     private func tapLoginButton(in authScreen: XCUIElement) {
         let loginButton = authScreen.buttons["Login"]
         XCTAssertTrue(loginButton.waitForExistence(timeout: 8),
-                     "Кнопка 'Login' не найдена")
+                      "Кнопка 'Login' не найдена")
         loginButton.tap()
         print("Нажата кнопка входа")
     }
@@ -88,7 +88,7 @@ class AuthUITests: XCTestCase {
     private func waitForFeedScreen() {
         let feedCell = app.tables.cells.firstMatch
         XCTAssertTrue(feedCell.waitForExistence(timeout: 20),
-                     "Экран ленты не загрузился")
+                      "Экран ленты не загрузился")
         print("Успешный переход на экран ленты")
     }
     
@@ -100,56 +100,52 @@ class AuthUITests: XCTestCase {
         }
     }
     
+    
+}
+class ImageFeedUITests: XCTestCase {
+    private let app = XCUIApplication()
+    
+    override func setUpWithError() throws {
+        continueAfterFailure = false
+        app.launchArguments.append("isUITest")
+        app.launch()
+    }
+    
+    func testFeed() throws {
+        let tablesQuery = app.tables
+        let cell = tablesQuery.children(matching: .cell).element(boundBy: 0)
+        cell.swipeUp()
+        
+        sleep(2)
+        
+        let cellToLike = tablesQuery.children(matching: .cell).element(boundBy: 3)
+        cellToLike.buttons.firstMatch.tap()
+        
+        sleep(2)
+        cellToLike.buttons.firstMatch.tap()
+        
+        sleep(2)
+        cellToLike.tap()
+        
+        sleep(2)
+        
+        let image = app.scrollViews.images.element(boundBy: 0)
+        image.pinch(withScale: 3, velocity: 1)
+        image.pinch(withScale: 0.5, velocity: -1)
+        
+        let navBackButtonWhiteButton = app.buttons["Backward"]
+        navBackButtonWhiteButton.tap()
+    }
+    
     func testProfile() throws {
         sleep(3)
         app.tabBars.buttons.element(boundBy: 1).tap()
-       
+        
         XCTAssertTrue(app.staticTexts["Владимир Ольшевский"].exists)
         XCTAssertTrue(app.staticTexts["@vovan098"].exists)
         
         app.buttons["Exit"].tap()
         
         app.alerts["Пока, пока!"].scrollViews.otherElements.buttons["Да"].tap()
-    }
-}
-
-class ImageFeedUITests: XCTestCase {
-    private let app = XCUIApplication()
-    
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-        app.launch()
-    }
-    
-    func testFeed() throws {
-
-        let tablesQuery = app.tables
-        let cell = tablesQuery.children(matching: .cell).element(boundBy: 0)
-        cell.swipeUp()
-
-        sleep(2)
-        
-        let cellToLike = tablesQuery.children(matching: .cell).element(boundBy: 3)
-        
-        //        cellToLike.buttons["unactiveLike"].tap()
-        //        cellToLike.buttons["activeLike"].tap()
-        
-        cellToLike.buttons.firstMatch.tap()
-
-        sleep(2)
-        cellToLike.buttons.firstMatch.tap()
-        
-        sleep(2)
-        
-        cellToLike.tap()
-        
-        sleep(2)
-        
-        let image = app.scrollViews.images.element(boundBy: 0)
-        image.pinch(withScale: 3, velocity: 1) 
-        image.pinch(withScale: 0.5, velocity: -1)
-        
-        let navBackButtonWhiteButton = app.buttons["Backward"]
-        navBackButtonWhiteButton.tap()
     }
 }
