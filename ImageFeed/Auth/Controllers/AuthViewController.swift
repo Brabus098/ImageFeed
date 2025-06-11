@@ -5,6 +5,7 @@ import ProgressHUD
 protocol AuthViewControllerDelegate: AnyObject {
     func didAuthenticate(_ vc: AuthViewController)
 }
+
 final class AuthViewController: UIViewController, WebViewViewControllerDelegate {
     
     private enum ButtonConstants {
@@ -41,7 +42,11 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
                 assertionFailure("Failed to prepare for \(identifierForView)")
                 return
             }
+            let authHelper = AuthHelper()
+            let webViewPresenter = WebViewPresenter(authHelper: authHelper)
             webViewViewController.delegate = self
+            webViewViewController.presenter = webViewPresenter
+            webViewPresenter.view = webViewViewController
         } else {
             super.prepare(for: segue, sender: sender)
         }
@@ -67,7 +72,8 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
         enterButton.translatesAutoresizingMaskIntoConstraints = false
         
         // NavigationController
-        navigationController?.navigationBar.backIndicatorImage = UIImage(named: "Backward")
+         navigationController?.navigationBar.backIndicatorImage = UIImage(named: "Backward")
+    
         navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "Backward")
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem?.tintColor = UIColor(named: "YP Black (iOS)")

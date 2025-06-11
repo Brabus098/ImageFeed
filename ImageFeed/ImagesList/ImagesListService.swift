@@ -1,8 +1,7 @@
 //  ImagesListService.swift
-
 import Foundation
 
-final class ImagesListService {
+final class ImagesListService: ImageListServiceProtocol {
     
     private(set) var photos: [Photo] = [] // Массив с новыми фото объектами
     private var lastLoadedPage: Int? // Крайний номер загруженной страницы
@@ -68,7 +67,7 @@ final class ImagesListService {
                     var photoArray = [Photo]()
                     data.forEach { photoResult in
                         let createdAt = photoResult.createdAt // "2016-05-03T11:00:28-04:00"
-                        let dateFormatter = DateFormatterForCell.DateFormatterUtils.ISOFormat
+                        let dateFormatter = DateFormatterUtils.ISOFormat
                         let date = dateFormatter.date(from: createdAt ?? "") // задаем пустую строку в случае отсутствия значения
                         
                         photoArray.append(Photo(id: photoResult.id,
@@ -117,5 +116,11 @@ extension ImagesListService {
     
     func cleanPhotosArray(){
         self.photos.removeAll()
+    }
+}
+
+extension ImagesListService {
+    func photo(at index: Int) -> Photo {
+        return photos[index]
     }
 }
