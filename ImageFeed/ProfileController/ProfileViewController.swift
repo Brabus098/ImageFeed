@@ -2,8 +2,121 @@
 
 import UIKit
 import Kingfisher
+import Foundation
 
-final class ProfileViewController: UIViewController {
+protocol ProfileViewControllerProtocol {
+    var profileService: ProfileServiceProtocol? { get set } // переменная для релаизации инверсии зависимостей
+    var helper: HelperProtocol? { get set } // протокол для выноса отвественносетей
+    func showShimmer() // показать шимер
+    func hideShimmer() // скрыть шимер
+    func confirmExit()
+}
+
+protocol ProfileServiceProtocol {
+    var profile: Profile? { get } // протокол для реализации инверсии зависимостей
+}
+
+protocol HelperProtocol{
+    var controller: ProfileViewControllerProtocol? { get set }
+    var imageStatus: ViewDownloadStatus { get set }
+    var labelsStatus: ViewDownloadStatus { get set }
+    func showOrHideShimmer()
+    func goToExit()
+    var logoutService: LogoutServiceProtocol? { get set }
+}
+
+enum ViewDownloadStatus {
+    case imageIsReady
+    case labelsIsReady
+    case someoneNoReady
+}
+
+protocol LogoutServiceProtocol {
+    func logout()
+}
+
+class Helper: HelperProtocol{
+    
+    var logoutService: LogoutServiceProtocol?
+    var imageStatus: ViewDownloadStatus = .someoneNoReady
+    var labelsStatus: ViewDownloadStatus = .someoneNoReady
+    var controller: ProfileViewControllerProtocol?
+    
+    func goToExit() {
+        logoutService?.logout()
+        let rootController = SplashViewController()
+        guard let window = UIApplication.shared.windows.first else {
+            assertionFailure("Invalid window configuration")
+            return
+        }
+        window.rootViewController = rootController
+    }
+    
+    func showOrHideShimmer(){
+        if imageStatus == .imageIsReady && labelsStatus == .labelsIsReady {
+            print("HERE")
+            controller?.hideShimmer()
+        } else {
+            print(imageStatus, labelsStatus)
+            controller?.showShimmer()
+        }
+    }
+    
+    init(logoutService: LogoutServiceProtocol? = nil, controller: ProfileViewControllerProtocol ) {
+        self.logoutService = logoutService
+        self.controller = controller
+    }
+    
+}
+
+protocol ShimmerProtocol {
+    func showShimmer(over view: UIView)
+    func cleanLayers()
+    var animationLayers: Set<CALayer> { get set}
+
+}
+
+final class Shimmer:ShimmerProtocol {
+    
+    var animationLayers = Set<CALayer>()
+    
+    func showShimmer(over view: UIView) {
+        let gradient = CAGradientLayer()
+        gradient.frame = view.bounds
+        gradient.locations = [0, 0.1, 0.3]
+        
+        gradient.colors = [
+            UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1).cgColor,
+            UIColor(red: 0.531, green: 0.533, blue: 0.553, alpha: 1).cgColor,
+            UIColor(red: 0.431, green: 0.433, blue: 0.453, alpha: 1).cgColor
+        ]
+        
+        gradient.startPoint = CGPoint(x: 0, y: 0.5)
+        gradient.endPoint = CGPoint(x: 1, y: 0.5)
+        gradient.cornerRadius = view.frame.height / 2
+        gradient.masksToBounds = true
+        
+        let gradientChangeAnimation = CABasicAnimation(keyPath: "locations")
+        gradientChangeAnimation.duration = 1.0
+        gradientChangeAnimation.repeatCount = .infinity
+        gradientChangeAnimation.fromValue = [0, 0.1, 0.3]
+        gradientChangeAnimation.toValue = [0, 0.8, 1]
+        gradient.add(gradientChangeAnimation, forKey: "locationsChange")
+        
+        animationLayers.insert(gradient)
+        view.layer.addSublayer(gradient)
+    }
+    
+    func cleanLayers() {
+        animationLayers.forEach { gradient in
+            gradient.removeFromSuperlayer()
+        }
+        animationLayers.removeAll()
+    }
+}
+
+
+final class ProfileViewController: UIViewController, ProfileViewControllerProtocol {
     
     // MARK: Properties
     private var profileImageView = UIImageView()
@@ -12,17 +125,18 @@ final class ProfileViewController: UIViewController {
     private var usernameLabel = UILabel()
     private var statusLabel = UILabel()
     private var logoutButton = UIButton()
-    private var profileService = ProfileService.shared
-    private var shimmerPlaceholders: [ShimmerView] = []
-    private var animationLayers = Set<CALayer>()
-    private var imageStatus: ViewDownloadStatus = .someoneNoReady
-    private var labelsStatus: ViewDownloadStatus = .someoneNoReady
-
-    private enum ViewDownloadStatus{
-        case imageIsReady
-        case labelsIsReady
-        case someoneNoReady
-    }
+    var profileService: ProfileServiceProtocol?
+    var helper: HelperProtocol?
+    //private var profileService = ProfileService.shared // Инверсия зависимостей
+    var shimmer: ShimmerProtocol?
+//    private var imageStatus: ViewDownloadStatus = .someoneNoReady
+//    private var labelsStatus: ViewDownloadStatus = .someoneNoReady
+//    
+//    private enum ViewDownloadStatus{
+//        case imageIsReady
+//        case labelsIsReady
+//        case someoneNoReady
+//    }
     
     private enum ConstantsProfile {
         static let avatarSize: CGFloat = 70
@@ -35,6 +149,17 @@ final class ProfileViewController: UIViewController {
         static let trailingInsert: CGFloat = -26
     }
     
+    init(profileService: ProfileServiceProtocol? = nil, shimmer: ShimmerProtocol? = nil, helper: HelperProtocol? = nil) {
+        self.profileService = profileService
+        self.shimmer = shimmer
+        self.helper = helper
+        super.init(nibName: nil, bundle: nil) // Обязательно вызываем super.init
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: LifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,8 +169,8 @@ final class ProfileViewController: UIViewController {
         setUpEmail(email: usernameLabel, profileName: nameLabel, profileImage: profileImageView)
         setUpStatus(email: usernameLabel, status: statusLabel, profileImage: profileImageView)
         setUpExitButton(exitButton: logoutButton, profileImage: profileImageView)
-       
-        if let profile = profileService.profile {
+        
+        if let profile = profileService?.profile{ // profileService.profile инверсия зависимостей
             updateProfileDetails(profile: profile)
         }
         
@@ -57,9 +182,9 @@ final class ProfileViewController: UIViewController {
             self.updateAvatar()
         })
         
-       // Обновление аватарки
-       updateAvatar()
-     }
+        // Обновление аватарки
+        updateAvatar()
+    }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -69,17 +194,22 @@ final class ProfileViewController: UIViewController {
     
     override func viewIsAppearing(_ animated:Bool) {
         super.viewIsAppearing(animated)
-        if imageStatus != .imageIsReady || labelsStatus != .labelsIsReady {
-            
-                       self.showShimmer(over: self.profileImageView)
-                       self.showShimmer(over: self.usernameLabel)
-                       self.showShimmer(over: self.statusLabel)
-                       self.showShimmer(over: self.nameLabel)
-                   
-        } else if imageStatus == .imageIsReady || labelsStatus == .labelsIsReady{
-            downloadStatusFor(image: imageStatus, labels: labelsStatus)
-        }
+        
+        helper?.showOrHideShimmer()
+        
+
+//        if imageStatus != .imageIsReady || labelsStatus != .labelsIsReady { // Ответсвенность  - логика показа шимеров
+//            
+//            self.showShimmer(over: self.profileImageView)
+//            self.showShimmer(over: self.usernameLabel)
+//            self.showShimmer(over: self.statusLabel)
+//            self.showShimmer(over: self.nameLabel)
+//            
+//        } else if imageStatus == .imageIsReady || labelsStatus == .labelsIsReady{
+//            downloadStatusFor(image: imageStatus, labels: labelsStatus)
+//        }
     }
+
     // MARK: Methods
     // Метод обновляет данные профиля
     private func updateAvatar() {
@@ -88,26 +218,34 @@ final class ProfileViewController: UIViewController {
               let placeHolderImage = UIImage(named: "PlaceHolderForProfileImage") else {
             return
         }
-            self.profileImageView.backgroundColor = .clear
-            let processor = RoundCornerImageProcessor(cornerRadius: 61, backgroundColor: .clear)
-            self.profileImageView.kf.setImage(with: imageUrl,
-                                       placeholder: placeHolderImage,
-                                       options: [.processor(processor)]) { _ in
-                self.imageStatus = .imageIsReady
-                self.downloadStatusFor(image: self.imageStatus, labels: self.labelsStatus)
+        self.profileImageView.backgroundColor = .clear
+        let processor = RoundCornerImageProcessor(cornerRadius: 61, backgroundColor: .clear)
+        self.profileImageView.kf.setImage(with: imageUrl,
+                                          placeholder: placeHolderImage,
+                                          options: [.processor(processor)]) { _ in
+            self.helper?.imageStatus = .imageIsReady
+            //print("Значение картинки задано")
+            //self.hideShimmer()
+
+//            self.imageStatus = ViewDownloadStatus.imageIsReady
+//            self.downloadStatusFor(image: self.imageStatus, labels: self.labelsStatus)
         }
     }
     // Метод обновляет фото профиля
-    private func updateProfileDetails(profile: Profile){
+    func updateProfileDetails(profile: Profile){
         self.nameLabel.text = profile.name
         self.statusLabel.text = profile.bio
         self.usernameLabel.text = profile.loginName
-        labelsStatus = .labelsIsReady
+        self.helper?.labelsStatus = .labelsIsReady
+        print("Значение задано")
+//        labelsStatus = .labelsIsReady
     }
     
-    private func downloadStatusFor(image: ViewDownloadStatus, labels: ViewDownloadStatus){
-            hideAllShimmers(animationSet: animationLayers)
-    }
+//    private func downloadStatusFor(image: ViewDownloadStatus, labels: ViewDownloadStatus){
+//        animationLayers.forEach { gradient in
+//            gradient.removeFromSuperlayer()
+//        }
+//    }
     
     private func addSubview(_ subview: UIView) {
         view.addSubview(subview)
@@ -172,9 +310,9 @@ final class ProfileViewController: UIViewController {
         exitButton.tintColor = .ypRedIOS
         exitButton.setImage(UIImage(named: "Exit"), for: .normal)
         exitButton.addTarget(self, action: #selector(exitAction), for: .touchUpInside)
-    
+        
         addSubview(exitButton)
-
+        
         NSLayoutConstraint.activate([
             exitButton.centerYAnchor.constraint(equalTo: profileImage.centerYAnchor),
             exitButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: ConstantsProfile.trailingInsert),
@@ -183,40 +321,33 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
-    private func showShimmer(over view: UIView) {
-        let gradient = CAGradientLayer()
-        gradient.frame = view.bounds
-        gradient.locations = [0, 0.1, 0.3]
-        
-        gradient.colors = [
-            UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1).cgColor,
-            UIColor(red: 0.531, green: 0.533, blue: 0.553, alpha: 1).cgColor,
-            UIColor(red: 0.431, green: 0.433, blue: 0.453, alpha: 1).cgColor
-        ]
-        
-        gradient.startPoint = CGPoint(x: 0, y: 0.5)
-        gradient.endPoint = CGPoint(x: 1, y: 0.5)
-        gradient.cornerRadius = view.frame.height / 2
-        gradient.masksToBounds = true
-
-        let gradientChangeAnimation = CABasicAnimation(keyPath: "locations")
-        gradientChangeAnimation.duration = 1.0
-        gradientChangeAnimation.repeatCount = .infinity
-        gradientChangeAnimation.fromValue = [0, 0.1, 0.3]
-        gradientChangeAnimation.toValue = [0, 0.8, 1]
-        gradient.add(gradientChangeAnimation, forKey: "locationsChange")
-        
-        animationLayers.insert(gradient)
-        view.layer.addSublayer(gradient)
-    }
+//    private func showShimmer(over view: UIView) { // Ответсвенность  конфигурация шимера
+//        let gradient = CAGradientLayer()
+//        gradient.frame = view.bounds
+//        gradient.locations = [0, 0.1, 0.3]
+//        
+//        gradient.colors = [
+//            UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1).cgColor,
+//            UIColor(red: 0.531, green: 0.533, blue: 0.553, alpha: 1).cgColor,
+//            UIColor(red: 0.431, green: 0.433, blue: 0.453, alpha: 1).cgColor
+//        ]
+//        
+//        gradient.startPoint = CGPoint(x: 0, y: 0.5)
+//        gradient.endPoint = CGPoint(x: 1, y: 0.5)
+//        gradient.cornerRadius = view.frame.height / 2
+//        gradient.masksToBounds = true
+//        
+//        let gradientChangeAnimation = CABasicAnimation(keyPath: "locations")
+//        gradientChangeAnimation.duration = 1.0
+//        gradientChangeAnimation.repeatCount = .infinity
+//        gradientChangeAnimation.fromValue = [0, 0.1, 0.3]
+//        gradientChangeAnimation.toValue = [0, 0.8, 1]
+//        gradient.add(gradientChangeAnimation, forKey: "locationsChange")
+//        
+//        view.layer.addSublayer(gradient)
+//    }
     
-    private func hideAllShimmers(animationSet:  Set<CALayer>) {
-        animationLayers.forEach { gradient in
-            gradient.removeFromSuperlayer()
-        }
-    }
-    
-    @objc private func exitAction(){
+    @objc func exitAction(){
         
         SingleAlertPresenter.shared.showAlert(presentIn: self,
                                               title: "Пока, пока!",
@@ -226,15 +357,35 @@ final class ProfileViewController: UIViewController {
                                               firstCompetition: nil,
                                               optionalActionTitle: "Да",
                                               optionalStyleForSecondAction: .cancel,
-                                              secondCompetition: {
-            ProfileLogoutService.shared.logout()
-            let rootController = SplashViewController()
-            guard let window = UIApplication.shared.windows.first else {
-                assertionFailure("Invalid window configuration")
-                return
-            }
-            window.rootViewController = rootController
+                                              secondCompetition: {[weak self] in
+            self?.confirmExit()
+//            ProfileLogoutService.shared.logout()
+//            let rootController = SplashViewController()
+//            guard let window = UIApplication.shared.windows.first else {
+//                assertionFailure("Invalid window configuration")
+//                return
+//            }
+//            window.rootViewController = rootController
         },
                                               mode: .dual)
+    }
+}
+
+extension ProfileViewController {
+    
+    
+    func showShimmer() {
+        self.shimmer?.showShimmer(over: self.profileImageView)
+        self.shimmer?.showShimmer(over: self.usernameLabel)
+        self.shimmer?.showShimmer(over: self.statusLabel)
+        self.shimmer?.showShimmer(over: self.nameLabel)
+    }
+    
+    func hideShimmer() {
+        shimmer?.cleanLayers()
+    }
+    
+    func confirmExit(){
+        self.helper?.goToExit()
     }
 }

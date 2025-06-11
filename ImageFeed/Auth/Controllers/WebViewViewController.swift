@@ -2,52 +2,68 @@
 import UIKit
 import WebKit
 
-final class WebViewViewController: UIViewController {
+public protocol WebViewViewControllerProtocol: AnyObject {
+    var presenter: WebViewPresenterProtocol? { get set }
+    func load(request: URLRequest)
+    func setProgressValue(_ newValue: Float)
+    func setProgressHidden(_ isHidden: Bool)
+}
+
+final class WebViewViewController: UIViewController & WebViewViewControllerProtocol {
     
     // MARK: Properties
+    
+    var presenter: WebViewPresenterProtocol?
     @IBOutlet private weak var webView: WKWebView!
     @IBOutlet private weak var progressView: UIProgressView!
     private var estimatedProgressObservation: NSKeyValueObservation?
     weak var delegate: WebViewViewControllerDelegate?
-    private enum WebViewConstants {
-        static let unsplashAuthorizeURLString = "https://unsplash.com/oauth/authorize"
-    }
+    
+    
     // MARK: LifeCycle
     override func viewDidLoad(){
         super.viewDidLoad()
+        webView.restorationIdentifier = "myWebView"
         setUpViews()
-        loadAuthView()
-        updateProgress()
-        estimatedProgressObservation = webView.observe(
-            \.estimatedProgress,
-             options: [],
-             changeHandler: { [weak self] _, _ in
-                 guard let self = self else { return }
-                 self.updateProgress()
-             })
+        webView.navigationDelegate = self
+        //loadAuthView() - перенесена в презентер
+        //updateProgress() - пренесена в презентер вызывается там
+        presenter?.viewDidLoad()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        webView.addObserver(
+            self,
+            forKeyPath: #keyPath(WKWebView.estimatedProgress),
+            options: .new,
+            context: nil)
+        //updateProgress() - пренесена в презентер вызывается там
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?,
+                               of object: Any?,
+                               change: [NSKeyValueChangeKey : Any]?,
+                               context: UnsafeMutableRawPointer?) {
+        if keyPath == #keyPath(WKWebView.estimatedProgress) {
+            presenter?.didUpdateProgressValue(webView.estimatedProgress)
+        } else {
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+        }
+    }
+    
     // MARK: Methods
-    // Метод формирует запрос для загрузки страницы co входом в систему
-    private func loadAuthView(){
-        guard var urlComponents =  URLComponents(string: WebViewConstants.unsplashAuthorizeURLString) else {
-            print("Ошибка базовой ссылки")
-            return }
-        urlComponents.queryItems = [
-            URLQueryItem(name: "client_id", value: Constants.accessKey),
-            URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
-            URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: Constants.accessScope)
-        ]
-        guard let url = urlComponents.url else {
-            print("Ошибка в сборной авторизационной ссылки")
-            return }
-        let request = URLRequest(url: url)
+    func setProgressValue(_ newValue: Float){
+        progressView.progress = newValue
+    }
+    func setProgressHidden(_ isHidden: Bool){
+        progressView.isHidden = isHidden
+    }
+    func load(request: URLRequest) {
         webView.load(request)
     }
-    private func updateProgress(){
-        progressView.progress = Float(webView.estimatedProgress)
-        progressView.isHidden = fabs(webView.estimatedProgress - 1.0) <= 0.0001
-    }
+    
     private func setUpViews(){
         // Web
         webView.navigationDelegate = self // подписка на навигационного делегата
@@ -63,33 +79,25 @@ final class WebViewViewController: UIViewController {
     }
 }
 // MARK: WKNavigationDelegate
-extension WebViewViewController: WKNavigationDelegate {
+extension WebViewViewController: WKNavigationDelegate { // ЧЕТВЕРТАЯ ОТВЕСТВЕННОСТЬ - настройка UI
     // Метод обрабатывает переходы пользователя WebView и ищет код успешности
     func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        if let code = code(from: navigationAction) { // проверяем наличие успешного перехода с значением  "code"
+        if let code = code(from: navigationAction) {
             delegate?.webViewViewController(self, didAuthenticateWithCode: code) // -> оповещаем делегата об успешно полученном коде
             decisionHandler(.cancel)
         } else {
-            
             decisionHandler(.allow)
         }
     }
     // Метод разбирает запрос по частям пытаясь найти сode
-    private func code(from navigatorAction: WKNavigationAction) -> String? {
-        if
-            let url = navigatorAction.request.url,
-            let urlComponents = URLComponents(string: url.absoluteString),
-            urlComponents.path == "/oauth/authorize/native",
-            let items = urlComponents.queryItems,
-            let codeItems = items.first(where: {$0.name == "code"})
-        {
-            return codeItems.value
-        } else {
-            return nil
+    private func code(from navigatorAction: WKNavigationAction) -> String? { // ВТОРАЯ ОТВЕТСВЕННОСТЬ РАБОТА с API
+        if let url = navigatorAction.request.url {
+            return presenter?.code(from: url)
         }
+        return nil
     }
 }
