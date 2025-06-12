@@ -1,5 +1,4 @@
 //  WebViewPresenter.swift
-import UIKit
 import Foundation
 
 public protocol WebViewPresenterProtocol {
