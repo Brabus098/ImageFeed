@@ -14,29 +14,29 @@ final class ImagesListCell: UITableViewCell {
     weak var delegate: ImagesListCellDelegate?
     private var animationLayers = Set<CALayer>()
     // MARK: - UI Elements
-       private let cellImageView: UIImageView = {
-           let imageView = UIImageView()
-           imageView.contentMode = .scaleAspectFill
-           imageView.clipsToBounds = true
-           imageView.layer.cornerRadius = 16
-           imageView.translatesAutoresizingMaskIntoConstraints = false
-           return imageView
-       }()
-       
-       private let dateLabel: UILabel = {
-           let label = UILabel()
-           label.font = UIFont(name: "SFPro-Regular", size: 13)
-           label.textColor = .white
-           label.translatesAutoresizingMaskIntoConstraints = false
-           return label
-       }()
-       
-       private let likeButton: UIButton = {
-           let button = UIButton()
-           button.setTitle("", for: .normal)
-           button.translatesAutoresizingMaskIntoConstraints = false
-           return button
-       }()
+    private let cellImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 16
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    private let dateLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: "SFPro-Regular", size: 13)
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let likeButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("", for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     // MARK: - Init
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -44,7 +44,7 @@ final class ImagesListCell: UITableViewCell {
         setupViews()
         layoutConstraints()
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -57,7 +57,7 @@ final class ImagesListCell: UITableViewCell {
         
         likeButton.addTarget(self, action: #selector(likeButtonClicked), for: .touchUpInside)
     }
-
+    
     private func layoutConstraints() {
         NSLayoutConstraint.activate([
             
@@ -65,7 +65,7 @@ final class ImagesListCell: UITableViewCell {
             cellImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             cellImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             cellImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
-        
+            
             dateLabel.leadingAnchor.constraint(equalTo: cellImageView.leadingAnchor, constant: 8),
             dateLabel.bottomAnchor.constraint(equalTo: cellImageView.bottomAnchor, constant: -8),
             

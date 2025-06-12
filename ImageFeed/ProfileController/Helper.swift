@@ -9,7 +9,7 @@ class Helper: HelperProtocol{
     var logoutService: LogoutServiceProtocol?
     var imageStatus: ViewDownloadStatus = .someoneNoReady
     var labelsStatus: ViewDownloadStatus = .someoneNoReady
-    var controller: ProfileViewControllerProtocol?
+    weak var controller: ProfileViewControllerProtocol?
     
     func goToExit() {
         logoutService?.logout()

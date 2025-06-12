@@ -4,7 +4,7 @@ import UIKit
 import Kingfisher
 import Foundation
 
-protocol ProfileViewControllerProtocol {
+protocol ProfileViewControllerProtocol: AnyObject {
     var profileService: ProfileServiceProtocol? { get set }
     var helper: HelperProtocol? { get set }
     func showShimmer()
