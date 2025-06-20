@@ -29,27 +29,27 @@ final class RaceTestViewController: UIViewController {
     }
     
     @objc private func testSameCode() {
-        print("🚀 Testing SAME code race condition")
+        print("Testing SAME code race condition")
         let code = "same_code"
         oauthService.fetchOAuthToken(code: code) { result in
-            print("🟦 FIRST result: \(result)")
+            print("FIRST result: \(result)")
         }
         oauthService.fetchOAuthToken(code: code) { result in
-            print("🟩 SECOND result: \(result)")
+            print("SECOND result: \(result)")
         }
     }
 
     @objc private func testDifferentCode() {
-        print("🚀 Testing DIFFERENT code race condition")
+        print("Testing DIFFERENT code race condition")
         let firstCode = "code_1"
         let secondCode = "code_2"
         
         oauthService.fetchOAuthToken(code: firstCode) { result in
-            print("🟥 FIRST result: \(result)")
+            print("FIRST result: \(result)")
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.oauthService.fetchOAuthToken(code: secondCode) { result in
-                print("🟧 SECOND result: \(result)")
+                print("SECOND result: \(result)")
             }
         }
     }

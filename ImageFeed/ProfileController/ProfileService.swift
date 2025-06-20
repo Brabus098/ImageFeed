@@ -2,14 +2,14 @@
 
 import UIKit
 
-final class ProfileService {
-    
+final class ProfileService: ProfileServiceProtocol {
+
     private var taskState: URLSessionTask?
     private let syncQueue = DispatchQueue(label: "serial")
-    private(set) var profile: Profile?
+    private(set) var profile: Profile? 
     
     // Синглтон
-    static let shared = ProfileService()
+    static let shared = ProfileService() 
     private init() {}
     
     // Метод который создает GET запрос

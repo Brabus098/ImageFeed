@@ -11,12 +11,70 @@ final class ImagesListCell: UITableViewCell {
     
     // MARK: Property
     static let reuseIdentifier = "ImagesListCell"
-    @IBOutlet private var cellImageView: UIImageView!
-    @IBOutlet private var dateLabel: UILabel!
-    @IBOutlet var likeButton: UIButton!
     weak var delegate: ImagesListCellDelegate?
     private var animationLayers = Set<CALayer>()
+    // MARK: - UI Elements
+    private let cellImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 16
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
     
+    private let dateLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont(name: "SFPro-Regular", size: 13)
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let likeButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("", for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    // MARK: - Init
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupViews()
+        layoutConstraints()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    // MARK: - Setup
+    private func setupViews() {
+        contentView.addSubview(cellImageView)
+        contentView.addSubview(dateLabel)
+        contentView.addSubview(likeButton)
+        contentView.backgroundColor = .ypBlackIOS
+        
+        likeButton.addTarget(self, action: #selector(likeButtonClicked), for: .touchUpInside)
+    }
+    
+    private func layoutConstraints() {
+        NSLayoutConstraint.activate([
+            
+            cellImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
+            cellImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            cellImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            cellImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
+            
+            dateLabel.leadingAnchor.constraint(equalTo: cellImageView.leadingAnchor, constant: 8),
+            dateLabel.bottomAnchor.constraint(equalTo: cellImageView.bottomAnchor, constant: -8),
+            
+            likeButton.trailingAnchor.constraint(equalTo: cellImageView.trailingAnchor),
+            likeButton.topAnchor.constraint(equalTo: cellImageView.topAnchor),
+            likeButton.widthAnchor.constraint(equalToConstant: 44),
+            likeButton.heightAnchor.constraint(equalToConstant: 44)
+        ])
+    }
     
     // Метод настройки кастомной строки
     func configCell(for cell: ImagesListCell, with indexPath: IndexPath, url: String, tableView: UITableView, likeStartState: Bool, data: Date?) {
@@ -33,7 +91,7 @@ final class ImagesListCell: UITableViewCell {
         
         // Задаем дату и настриваем шрифт текста
         if let actualData = data {
-            let actualFormatter = DateFormatterForCell.DateFormatterUtils.dateFormatter
+            let actualFormatter = DateFormatterUtils.dateFormatter
             cell.dateLabel.text = actualFormatter.string(from: actualData)
         } else {
             cell.dateLabel.text = "" // задаем дату при отсутствии значения
@@ -47,7 +105,13 @@ final class ImagesListCell: UITableViewCell {
     
     func setIsLiked(for cell: ImagesListCell, with buttonStatus: Bool){
         cell.likeButton.setTitle("", for: .normal)
-        buttonStatus ? cell.likeButton.setImage(.activeLike, for: .normal) : cell.likeButton.setImage(.unactiveLike, for: .normal)
+        if buttonStatus {
+            cell.likeButton.setImage(.activeLike, for: .normal)
+            cell.likeButton.accessibilityIdentifier = "activeLike"
+        } else {
+            cell.likeButton.setImage(.unactiveLike, for: .normal)
+            cell.likeButton.accessibilityIdentifier = "unactiveLike"
+        }
     }
     
     private func showShimmer(over view: UIView) {

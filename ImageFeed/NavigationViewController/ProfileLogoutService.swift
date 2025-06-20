@@ -3,12 +3,13 @@
 import Foundation
 import WebKit
 
-final class ProfileLogoutService {
+final class ProfileLogoutService: LogoutServiceProtocol {
+    
     static let shared = ProfileLogoutService()
+    private init() {}
+    
     private let imagesListService = ImagesListService()
     private let storage = KeychainStorage()
-    
-    private init() {}
     
     func logout() {
         cleanCookies()
