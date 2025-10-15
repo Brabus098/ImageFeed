@@ -13,11 +13,10 @@
   
   <img src="https://github.com/Brabus098/ImageFeed/blob/main/Loader.png?raw=true" width="200" alt="Загрузка фото">
   <img src="https://github.com/Brabus098/ImageFeed/blob/main/feed-screen.png?raw=true" width="200" alt="Лента изображений">
-    <img src="https://github.com/Brabus098/ImageFeed/blob/main/profile-screen.png?raw=true" width="200" alt="Профиль пользователя">
-
   <img src="https://github.com/Brabus098/ImageFeed/blob/main/fullscreen-image.png?raw=true" width="200" alt="Просмотр изображения">
     <img src="https://github.com/Brabus098/ImageFeed/blob/main/Sharing.png?raw=true" width="200" alt="Поделиться изображением">
-    <img src="https://github.com/Brabus098/ImageFeed/blob/main/Exit.png?raw=true" width="200" alt="Поделиться изображением">
+ <img src="https://github.com/Brabus098/ImageFeed/blob/main/profile-screen.png?raw=true" width="200" alt="Профиль пользователя">
+  <img src="https://github.com/Brabus098/ImageFeed/blob/main/Exit.png?raw=true" width="200" alt="Выход из системы">
 
 
 </p>
