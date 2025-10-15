@@ -9,10 +9,10 @@
 **ImageFeed** - многостраничное iOS-приложение для просмотра бесконечной ленты изображений через API Unsplash. Авторизация через OAuth, возможность лайкать фотографии и добавлять их в избранное.
 
 <p align="center">
-  <img src="https://github.com/Brabus098/ImageFeed/blob/main/Screenshots/auth-screen.png?raw=true" width="200" alt="Экран авторизации">
-  <img src="https://github.com/Brabus098/ImageFeed/blob/main/Screenshots/feed-screen.png?raw=true" width="200" alt="Лента изображений">
-  <img src="https://github.com/Brabus098/ImageFeed/blob/main/Screenshots/profile-screen.png?raw=true" width="200" alt="Профиль пользователя">
-  <img src="https://github.com/Brabus098/ImageFeed/blob/main/Screenshots/fullscreen-image.png?raw=true" width="200" alt="Просмотр изображения">
+  <img src="https://github.com/Brabus098/ImageFeed/blob/main/auth-screen.png?raw=true" width="200" alt="Экран авторизации">
+  <img src="https://github.com/Brabus098/ImageFeed/blob/main/feed-screen.png?raw=true" width="200" alt="Лента изображений">
+  <img src="https://github.com/Brabus098/ImageFeed/blob/main/profile-screen.png?raw=true" width="200" alt="Профиль пользователя">
+  <img src="https://github.com/Brabus098/ImageFeed/blob/main/fullscreen-image.png?raw=true" width="200" alt="Просмотр изображения">
 </p>
 
 ## 🚀 Возможности
