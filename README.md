@@ -70,3 +70,58 @@
 git clone https://github.com/Brabus098/ImageFeed.git
 cd ImageFeed
 open ImageFeed.xcodeproj
+```
+1) Настройте OAuth в Unsplash Developer Portal
+2) Добавьте API keys в проект
+3) Выберите симулятор или подключите устройство
+4) Нажмите Cmd + R для сборки и запуска
+
+## 🏗 Архитектура
+Проект реализован с использованием MVC архитектуры:
+
+Четкое разделение сетевых запросов и UI логики
+
+Эффективная работа с UITableView и бесконечной лентой
+
+Безопасное хранение OAuth токенов в Keychain
+
+## 🎯 Особенности реализации
+
+🔐 OAuth авторизация
+Безопасный обмен кода на access token
+Хранение учетных данных в iOS Keychain
+Обработка сценариев ошибок сети
+
+## 📱 Пользовательский интерфейс
+UITableView с кастомными ячейками для ленты
+TabBarController для навигации между разделами
+Gesture recognizers для полноэкранного просмотра
+System fonts для соответствия гайдлайнам iOS
+
+## 🌐 Сетевое взаимодействие
+REST API Unsplash для загрузки изображений
+URLSession для асинхронных запросов
+Kingfisher/SDWebImage для кэширования изображений
+Error handling с пользовательскими алертами
+
+## 📈 Статус разработки
+✅ Завершено
+OAuth авторизация через Unsplash
+Бесконечная лента изображений
+Полноэкранный просмотр с жестами
+Система профиля пользователя
+Навигация через TabBar
+Система лайков и избранного
+Галерея избранных изображений в профиле
+Функционал поделиться и сохранить
+Счетчики лайков и избранного
+
+🔄 В планах
+Кэширование данных для офлайн-работы
+Push-уведомления о новых публикациях
+Расширенная статистика профиля
+
+## 👨‍💻 Автор
+Vladimir - iOS Developer
+
+<p align="center"> <a href="https://t.me/Vov4eg777"> <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white&color=FA7343" alt="Telegram"/> </a> <a href="mailto:olsh0988@gmail.com"> <img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white&color=FA7343" alt="Email"/> </a> <a href="https://docs.google.com/document/d/18caT1lR7wfQcId3kl3MaWkGpnjQqEGYBz7goR_59zEw/edit?usp=sharing"> <img src="https://img.shields.io/badge/Resume-4285F4?style=for-the-badge&logo=google-drive&logoColor=white&color=FA7343" alt="Resume"/> </a> </p>
