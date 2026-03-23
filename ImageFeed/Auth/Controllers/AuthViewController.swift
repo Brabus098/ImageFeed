@@ -1,4 +1,5 @@
 //  AuthViewController.swift
+
 import UIKit
 import ProgressHUD
 
@@ -6,7 +7,7 @@ protocol AuthViewControllerDelegate: AnyObject {
     func didAuthenticate(_ vc: AuthViewController)
 }
 
-final class AuthViewController: UIViewController, WebViewViewControllerDelegate {
+final class AuthViewController: UIViewController {
     
     private enum ButtonConstants {
         static let bottomInsert: CGFloat = -90
@@ -51,34 +52,27 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
             super.prepare(for: segue, sender: sender)
         }
     }
+    
     private func setUpViews(){
-        // View
         view.backgroundColor = .ypBlackIOS
-        
-        // Logo
         let logo = UIImage(named: "Logo_of_Unsplash")
         logoImageView.image = logo
         
         view.addSubview(logoImageView)
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Button
-        
-        self.enterButton.setTitle("Войти", for: .normal)
-        self.enterButton.setTitleColor(.ypBlackIOS, for: .normal)
-        self.enterButton.layer.masksToBounds = true
-        self.enterButton.layer.cornerRadius = 16
+        enterButton.setTitle("Войти", for: .normal)
+        enterButton.setTitleColor(.ypBlackIOS, for: .normal)
+        enterButton.layer.masksToBounds = true
+        enterButton.layer.cornerRadius = 16
         
         enterButton.translatesAutoresizingMaskIntoConstraints = false
         
-        // NavigationController
-         navigationController?.navigationBar.backIndicatorImage = UIImage(named: "Backward")
-    
+        navigationController?.navigationBar.backIndicatorImage = UIImage(named: "Backward")
         navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "Backward")
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem?.tintColor = UIColor(named: "YP Black (iOS)")
         
-        // Constraint
         NSLayoutConstraint.activate([
             logoImageView.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
             logoImageView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
@@ -89,20 +83,25 @@ final class AuthViewController: UIViewController, WebViewViewControllerDelegate 
             enterButton.centerXAnchor.constraint(equalTo: logoImageView.centerXAnchor)
         ])
     }
-    // MARK: webViewViewControllerDelegate
+}
+
+extension AuthViewController: WebViewViewControllerDelegate {
     // Метод создает POST запрос и отправляет в сеть
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            
             UIBlockingProgressHUD.show()
-            self.navigationController?.popViewController(animated: true)
-            self.oauth2Service.fetchOAuthToken(code: code) { result in
+            self?.navigationController?.popViewController(animated: true)
+            
+            self?.oauth2Service.fetchOAuthToken(code: code) {[weak self] result in
                 DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    UIBlockingProgressHUD.dismiss()
+                    
                     switch result {
                     case .success:
-                        UIBlockingProgressHUD.dismiss()
                         self.delegate?.didAuthenticate(self)
                     case .failure:
-                        UIBlockingProgressHUD.dismiss()
                         AlertPresenter.shared.showAlert(controller: self,
                                                         title: "Что-то пошло не так(",
                                                         message: "Не удалось войти в систему",

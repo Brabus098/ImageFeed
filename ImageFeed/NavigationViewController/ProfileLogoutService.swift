@@ -13,7 +13,7 @@ final class ProfileLogoutService: LogoutServiceProtocol {
     
     func logout() {
         cleanCookies()
-        storage.deleteToken()
+        _ = storage.deleteToken()
         ProfileService.shared.cleanData()
         imagesListService.cleanPhotosArray()
         ProfileImageService.shared.cleanAvatarURL()

@@ -3,7 +3,6 @@ import Foundation
 
 @testable import ImageFeed
 
-// Тесты для ProfileViewController
 class ProfileViewControllerTests: XCTestCase {
     var sut: ProfileViewController?
     var mockProfileService: MockProfileService?
@@ -43,85 +42,64 @@ class ProfileViewControllerTests: XCTestCase {
     }
     
     func testControllerViewDidLoad_SetupUIElements() {
-        // given
         guard let controller = sut else { return }
         let mockProfileService = MockProfileService()
         controller.profileService = mockProfileService
         
-        // when
         controller.loadViewIfNeeded()
         
-        // then
         XCTAssertTrue(controller.view.subviews.contains(where: { $0 is UIImageView }), "ProfileImageView should be added")
         XCTAssertTrue(controller.view.subviews.contains(where: { $0 is UILabel }), "Labels should be added")
         XCTAssertTrue(controller.view.subviews.contains(where: { $0 is UIButton }), "LogoutButton should be added")
     }
     
     func testControllerViewDidLoad_UpdateProfileDetails() {
-        // given
         guard let controller = sut, let mockHelper = mockHelper else { return }
         let profile = Profile(userName: "@test", name: "Test Name", loginName: "@test", bio: "Test Bio")
         mockProfileService?.profile = profile
         
-        // when
         controller.loadViewIfNeeded()
         
-        // then
         XCTAssertEqual(mockHelper.labelsStatus, .labelsIsReady, "Helper labelsStatus should be updated")
     }
     
     func testControllerUpdateProfileDetails() {
-        // given
         guard let controller = sut, let mockHelper = mockHelper else { return }
         let profile = Profile(userName: "@john", name: "John Doe", loginName: "@john", bio: "Hello")
-        controller.loadViewIfNeeded() // Загружаем view для инициализации UI
+        controller.loadViewIfNeeded()
         
-        // when
         controller.updateProfileDetails(profile: profile)
         
-        // then
-        XCTAssertEqual(mockHelper.labelsStatus, .labelsIsReady, "Helper labelsStatus should be set to .labelsIsReady")
-        // Поскольку свойства private, прямой доступ невозможен. Проверяем косвенно через поведение.
+        XCTAssertEqual(mockHelper.labelsStatus, .labelsIsReady, "Helper labelsStatus should be set to .labelsIsReady") // Поскольку свойства private, прямой доступ невозможен. Проверяем косвенно через поведение.
     }
     
     func testControllerShowShimmer() {
-        // given
         guard let controller = sut, let mockShimmer = mockShimmer else { return }
         controller.loadViewIfNeeded()
         
-        // when
         controller.showShimmer()
         
-        // then
         XCTAssertTrue(mockShimmer.showShimmerCalled, "Shimmer's showShimmer should be called")
         XCTAssertEqual(mockShimmer.views.count, 4, "Shimmer should be applied to 4 views")
     }
     
     func testControllerHideShimmer() {
-        // given
         guard let controller = sut, let mockShimmer = mockShimmer else { return }
         
-        // when
         controller.hideShimmer()
         
-        // then
         XCTAssertTrue(mockShimmer.cleanLayersCalled, "Shimmer's cleanLayers should be called")
     }
     
     func testControllerExitAction() {
-        // given
         guard let controller = sut, let mockHelper = mockHelper else { XCTFail("SUT или mockHelper is nil"); return }
-        //        controller.loadViewIfNeeded()
         
-        // when
         controller.confirmExit()
         
-        // then
         XCTAssertTrue(mockHelper.goToExitCalled, "Helper's goToExit should be called")
     }
 }
 
-// Тесты для Helper
 class HelperTests: XCTestCase {
     var sut: Helper?
     var mockController: MockProfileViewController?
@@ -142,46 +120,36 @@ class HelperTests: XCTestCase {
     }
     
     func testHelperShowOrHideShimmerWhenBothReady() {
-        // given
         guard let helper = sut, let mockController = mockController else { return }
         helper.imageStatus = .imageIsReady
         helper.labelsStatus = .labelsIsReady
         
-        // when
         helper.showOrHideShimmer()
         
-        // then
         XCTAssertTrue(mockController.hideShimmerCalled, "hideShimmer should be called when both are ready")
         XCTAssertFalse(mockController.showShimmerCalled, "showShimmer should not be called")
     }
     
     func testHelperShowOrHideShimmerWhenNotReady() {
-        // given
         guard let helper = sut, let mockController = mockController else { return }
         helper.imageStatus = .someoneNoReady
         helper.labelsStatus = .someoneNoReady
         
-        // when
         helper.showOrHideShimmer()
         
-        // then
         XCTAssertTrue(mockController.showShimmerCalled, "showShimmer should be called when not ready")
         XCTAssertFalse(mockController.hideShimmerCalled, "hideShimmer should not be called")
     }
     
     func testHelperGoToExit() {
-        // given
         guard let helper = sut, let mockLogoutService = mockLogoutService else { return }
         
-        // when
         helper.goToExit()
         
-        // then
         XCTAssertTrue(mockLogoutService.logoutCalled, "LogoutService's logout should be called")
     }
 }
 
-// Тесты для Shimmer
 class ShimmerTests: XCTestCase {
     var sut: Shimmer?
     var testView: UIView?
@@ -199,26 +167,20 @@ class ShimmerTests: XCTestCase {
     }
     
     func testShimmerShowShimmer() {
-        // given
         guard let shimmer = sut, let view = testView else { return }
         
-        // when
         shimmer.showShimmer(over: view)
         
-        // then
         XCTAssertEqual(shimmer.animationLayers.count, 1, "One layer should be added")
         XCTAssertTrue(view.layer.sublayers?.contains(shimmer.animationLayers.first!) ?? false, "Layer should be added to view")
     }
     
     func testShimmerCleanLayers() {
-        // given
         guard let shimmer = sut, let view = testView else { XCTFail("SUT or testView is nil"); return }
         shimmer.showShimmer(over: view)
         
-        // when
         shimmer.cleanLayers()
         
-        // then
         XCTAssertEqual(shimmer.animationLayers.count, 0, "All layers should be removed")
         XCTAssertTrue(view.layer.sublayers?.isEmpty ?? true, "No sublayers should remain on view")
     }

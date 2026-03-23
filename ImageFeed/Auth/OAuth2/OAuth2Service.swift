@@ -16,7 +16,7 @@ final class OAuth2Service {
     
     // MARK: Methods
     //Метод генерирует POST для получения Bearer Token
-    func makeOAuthTokenRequest(code: String) -> URLRequest? {
+    private func makeOAuthTokenRequest(code: String) -> URLRequest? {
         guard let baseURL = URL(string: "https://unsplash.com") else {
             print(NetworkError.createUrlError("[makeOAuthTokenRequest]: Failed to create URL"))
             return nil }
@@ -57,7 +57,7 @@ final class OAuth2Service {
         
         let session = URLSession.shared
         let task = session.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
-            switch result{
+            switch result {
             case .success(let response):
                 guard !response.token.isEmpty else {
                     print("[fetchOAuthToken]:, Ошибка - \(String(describing: DecodingError.keyNotFound)), токен пустой ")

@@ -4,7 +4,6 @@ import XCTest
 @testable import ImageFeed
 
 final class ImagesListPresenterTests: XCTestCase {
-    // MARK: - Tests
     
     func testViewDidLoadCallsFetchPhotosNextPage() {
         let service = MockImageListService()

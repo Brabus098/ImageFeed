@@ -1,12 +1,14 @@
-//  Untitled.swift
+//  KeychainStorage.swift
+
 import Foundation
 import SwiftKeychainWrapper
 
-final class KeychainStorage{
+final class KeychainStorage {
     
     private enum KeyForKeychain: String {
         case authToken
     }
+    
     var token: String? {
         get { let token: String? = KeychainWrapper.standard.string(forKey: KeyForKeychain.authToken.rawValue)
             return token}
@@ -21,9 +23,7 @@ final class KeychainStorage{
             }
         }
     }
-    var tokenDelete: Bool?{
-        get {KeychainWrapper.standard.removeObject(forKey: KeyForKeychain.authToken.rawValue)}
-    }
+    
     func deleteToken() -> Bool {
         return KeychainWrapper.standard.removeObject(forKey: KeyForKeychain.authToken.rawValue)
     }
