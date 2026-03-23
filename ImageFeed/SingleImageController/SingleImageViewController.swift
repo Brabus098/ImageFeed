@@ -10,9 +10,8 @@ final class SingleImageViewController: UIViewController {
     @IBOutlet weak private var displayedImageView: UIImageView!
     private let splash = UIImage(named: "SplashForBigImage")
     
-    // Свойство вызываемое из другого контролерра для добавление актуальной картинки
     var imageURL: URL? {
-        didSet{
+        didSet {
             loadImage()
         }
     }
@@ -51,6 +50,7 @@ final class SingleImageViewController: UIViewController {
         let visibleRectSize = scrollView.bounds.size
         let imageSize = image.size
         
+        // Определяем во сколько раз нужно уменьшить изображение
         let hScale = visibleRectSize.width / imageSize.width
         let vScale = visibleRectSize.height / imageSize.height
         let scale = min(scrollView.maximumZoomScale, max(scrollView.minimumZoomScale, max(hScale, vScale)))
@@ -104,7 +104,6 @@ final class SingleImageViewController: UIViewController {
     }
 }
 
-// MARK: UIScrollViewDelegate
 extension SingleImageViewController: UIScrollViewDelegate {
     // Метод позволяет пользователю вручную увеличивать или уменьшать изображение
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
@@ -127,7 +126,7 @@ private extension CGFloat {
     static let maxZoomScale: CGFloat = 1.25
 }
 
-extension SingleImageViewController{
+extension SingleImageViewController {
     private func showError(){
         SingleAlertPresenter.shared.showAlert(presentIn: self,
                                               title: "Что-то пошло не так. Попробовать ещё раз?",

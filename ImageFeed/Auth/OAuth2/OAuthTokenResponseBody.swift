@@ -1,6 +1,5 @@
 //  OAuthTokenResponseBody.swift
 
-// Структура декодинга
 struct OAuthTokenResponseBody: Codable {
     let token: String
     let error: [String]?
